@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard de Métricas CIF - Pipeline LLM</title>
+    <title>Panel CIF - Test Suite Run</title>
     <!-- Tailwind CSS (CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js (CDN) -->
@@ -29,24 +29,27 @@
                     CIF
                 </div>
                 <div>
-                    <h1 class="text-base font-bold text-white leading-tight">Panel de Métricas y Validación CIF</h1>
-                    <p class="text-[11px] text-slate-400">Resultados cuantitativos y auditoría diagnóstica</p>
+                    <h1 class="text-base font-bold text-white leading-tight">Panel de Métricas CIF: <span class="text-indigo-400">Test Suite Run</span></h1>
+                    <p class="text-[11px] text-slate-400">Archivo: test_codifier_output.json &bull; N = 12 historias</p>
                 </div>
             </div>
             <div class="flex items-center space-x-2 no-print">
+                <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-800">
+                    Modo: Validación Diagnóstica
+                </span>
                 <button onclick="window.print()" class="px-3 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
                     <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                     Imprimir / PDF
                 </button>
             </div>
         </div>
-        <!-- SIMPLE TABS -->
+        <!-- TABS -->
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-2 border-t border-slate-800/60 pt-1">
-            <button onclick="switchTab('metrics')" id="tab-btn-metrics" class="px-4 py-2 text-xs font-semibold border-b-2 border-indigo-500 text-indigo-400 transition">
-                📊 Métricas y Gráficos
+            <button onclick="switchTab('overview')" id="tab-btn-overview" class="px-4 py-2 text-xs font-semibold border-b-2 border-indigo-500 text-indigo-400 transition">
+                📊 Resumen Cuantitativo
             </button>
             <button onclick="switchTab('cases')" id="tab-btn-cases" class="px-4 py-2 text-xs font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition">
-                📋 Auditoría de Casos Clínicos
+                📋 Visor de Historias (12 casos)
             </button>
         </div>
     </header>
@@ -54,139 +57,61 @@
     <!-- MAIN CONTENT -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-        <!-- ================= TAB 1: MÉTRICAS Y GRÁFICOS ================= -->
-        <section id="tab-metrics" class="space-y-6">
+        <!-- ================= TAB 1: OVERVIEW ================= -->
+        <section id="tab-overview" class="space-y-6">
             
-            <!-- MODEL SELECTOR -->
-            <div class="flex flex-wrap items-center justify-between gap-4 p-3.5 rounded-xl bg-slate-900 border border-slate-800">
-                <div class="flex items-center gap-2">
-                    <span class="text-xs text-slate-400 font-medium">Modelo Activo:</span>
-                    <span id="selected-model-title" class="text-sm font-bold text-white">Gemini Flash 3.7</span>
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="changeModel('flash_37')" class="model-btn px-3 py-1 text-xs font-medium rounded-lg bg-indigo-600 text-white border border-indigo-500 transition" data-model="flash_37">
-                        Gemini Flash 3.7
-                    </button>
-                    <button onclick="changeModel('flash_35')" class="model-btn px-3 py-1 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" data-model="flash_35">
-                        Gemini Flash 3.5
-                    </button>
-                    <button onclick="changeModel('gemma_31b')" class="model-btn px-3 py-1 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition" data-model="gemma_31b">
-                        Gemma-4-31B-it
-                    </button>
-                </div>
-            </div>
-
-            <!-- KPIS CARDS (SINTÉTICO VS REAL) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- KPIS GRID -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 
-                <!-- SINTÉTICO -->
-                <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow">
-                    <div class="flex items-center justify-between mb-4">
-                        <span class="text-xs font-bold px-2.5 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800">Corpus Sintético</span>
-                        <span id="synth-sample-count" class="text-xs text-slate-400">N = --</span>
-                    </div>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
-                        <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-                            <div class="text-[11px] text-slate-400 font-medium">Micro-F1</div>
-                            <div id="synth-f1" class="text-xl font-bold text-white mt-1">--</div>
-                        </div>
-                        <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-                            <div class="text-[11px] text-slate-400 font-medium">Exact Match</div>
-                            <div id="synth-emr" class="text-xl font-bold text-indigo-300 mt-1">--</div>
-                        </div>
-                        <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-                            <div class="text-[11px] text-slate-400 font-medium">Precisión</div>
-                            <div id="synth-prec" class="text-xl font-bold text-slate-200 mt-1">--</div>
-                        </div>
-                        <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-                            <div class="text-[11px] text-slate-400 font-medium">Sensibilidad</div>
-                            <div id="synth-rec" class="text-xl font-bold text-slate-200 mt-1">--</div>
-                        </div>
-                    </div>
-                    <div class="mt-3 pt-2.5 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
-                        <span>Fiabilidad Inter-iteración (Gwet AC1): <strong id="synth-ac1" class="text-white">--</strong></span>
-                        <span>Consenso: <strong class="text-indigo-300">3/3</strong></span>
-                    </div>
+                
+                <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 shadow">
+                    <div class="text-[11px] text-slate-400 font-medium">Micro-F1 Global</div>
+                    <div class="text-2xl font-black text-emerald-400 mt-1">94.51%</div>
+                    <div class="text-[10px] text-slate-500 mt-0.5">Macro-F1: 95.05%</div>
                 </div>
-
-                <!-- HUMANO REAL -->
-                <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow">
-                    <div class="flex items-center justify-between mb-4">
-                        <span class="text-xs font-bold px-2.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">Corpus Humano Real</span>
-                        <span id="hum-sample-count" class="text-xs text-slate-400">N = --</span>
-                    </div>
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
-                        <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-                            <div class="text-[11px] text-slate-400 font-medium">Micro-F1</div>
-                            <div id="hum-f1" class="text-xl font-bold text-emerald-400 mt-1">--</div>
-                        </div>
-                        <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-                            <div class="text-[11px] text-slate-400 font-medium">Exact Match</div>
-                            <div id="hum-emr" class="text-xl font-bold text-indigo-300 mt-1">--</div>
-                        </div>
-                        <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-                            <div class="text-[11px] text-slate-400 font-medium">Precisión</div>
-                            <div id="hum-prec" class="text-xl font-bold text-slate-200 mt-1">--</div>
-                        </div>
-                        <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-                            <div class="text-[11px] text-slate-400 font-medium">Sensibilidad</div>
-                            <div id="hum-rec" class="text-xl font-bold text-slate-200 mt-1">--</div>
-                        </div>
-                    </div>
-                    <div class="mt-3 pt-2.5 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
-                        <span>Fiabilidad Inter-iteración (Gwet AC1): <strong id="hum-ac1" class="text-white">--</strong></span>
-                        <span>Acuerdo Krippendorff α: <strong id="hum-alpha" class="text-emerald-300">--</strong></span>
-                    </div>
+                <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 shadow">
+                    <div class="text-[11px] text-slate-400 font-medium">Precisión Diagnóstica</div>
+                    <div class="text-2xl font-black text-white mt-1">93.48%</div>
+                    <div class="text-[10px] text-slate-500 mt-0.5">Falsos Positivos: 3</div>
                 </div>
+                <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 shadow">
+                    <div class="text-[11px] text-slate-400 font-medium">Sensibilidad (Recall)</div>
+                    <div class="text-2xl font-black text-white mt-1">95.56%</div>
+                    <div class="text-[10px] text-slate-500 mt-0.5">Falsos Negativos: 2</div>
+                </div>
+                <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 shadow">
+                    <div class="text-[11px] text-slate-400 font-medium">Exact Match (EMR)</div>
+                    <div class="text-2xl font-black text-indigo-400 mt-1">66.67%</div>
+                    <div class="text-[10px] text-slate-500 mt-0.5">8/12 historias perfectas</div>
+                </div>
+                
 
             </div>
 
-            <!-- CHARTS -->
+            <!-- CHARTS GRID -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 
-                <!-- CHART 1: COMPARATIVA MODELOS -->
+                <!-- CHART 1: TOP CODES OR CHAPTERS -->
                 <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Micro-F1 (%) por Modelo</h3>
-                    <div class="h-60">
-                        <canvas id="chartModels"></canvas>
-                    </div>
-                </div>
-
-                <!-- CHART 2: CAPÍTULOS CIF -->
-                <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Rendimiento F1 (%) por Capítulos CIF</h3>
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Distribución por Capítulos CIF</h3>
                     <div class="h-60">
                         <canvas id="chartChapters"></canvas>
                     </div>
                 </div>
 
-            </div>
+                <!-- CHART 2: FREQUENT CODES -->
+                <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Top 10 Códigos CIF Más Frecuentes</h3>
+                    <div class="h-60">
+                        <canvas id="chartTopCodes"></canvas>
+                    </div>
+                </div>
 
-            <!-- COMPLETE METRICS DATA TABLE -->
-            <div class="p-5 rounded-xl bg-slate-900 border border-slate-800 shadow overflow-x-auto">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Tabla Completa de Resultados Cuantitativos</h3>
-                <table class="w-full text-xs text-left text-slate-300 border-collapse">
-                    <thead>
-                        <tr class="border-b border-slate-800 text-slate-400 font-semibold">
-                            <th class="py-2.5 px-3">Corpus</th>
-                            <th class="py-2.5 px-3">Modelo</th>
-                            <th class="py-2.5 px-3 text-right">Micro-F1</th>
-                            <th class="py-2.5 px-3 text-right">Macro-F1</th>
-                            <th class="py-2.5 px-3 text-right">Exact Match</th>
-                            <th class="py-2.5 px-3 text-right">Precisión</th>
-                            <th class="py-2.5 px-3 text-right">Recall</th>
-                            <th class="py-2.5 px-3 text-right">Gwet AC1</th>
-                        </tr>
-                    </thead>
-                    <tbody id="metrics-table-body" class="divide-y divide-slate-800/60">
-                        <!-- Injected via JS -->
-                    </tbody>
-                </table>
             </div>
 
         </section>
 
-        <!-- ================= TAB 2: AUDITORÍA DE CASOS ================= -->
+        <!-- ================= TAB 2: CASES AUDIT ================= -->
         <section id="tab-cases" class="hidden space-y-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 
@@ -194,7 +119,7 @@
                 <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 shadow flex flex-col h-[560px]">
                     <div class="mb-3 flex items-center justify-between">
                         <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Historias Clínicas</h3>
-                        <span id="case-badge-total" class="text-[10px] text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded border border-emerald-900">--</span>
+                        <span class="text-[10px] text-emerald-400 bg-emerald-950 px-2 py-0.5 rounded border border-emerald-900">12 casos</span>
                     </div>
                     <div id="case-list-container" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
                         <!-- Injected via JS -->
@@ -206,7 +131,6 @@
                     <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                         <div>
                             <span id="detail-case-badge" class="text-xs font-bold px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800">Caso #--</span>
-                            <span id="detail-case-author" class="text-xs text-slate-400 ml-2">--</span>
                         </div>
                         <div id="detail-case-match-status" class="text-xs font-bold px-2.5 py-1 rounded-md border">
                             --
@@ -216,41 +140,39 @@
                     <!-- TEXT -->
                     <div>
                         <div class="text-xs font-bold text-slate-400 mb-1">Texto Clínico:</div>
-                        <div id="detail-clinical-text" class="p-3.5 rounded-lg bg-slate-950 text-slate-300 text-xs leading-relaxed border border-slate-800 font-sans">
+                        <div id="detail-clinical-text" class="p-3.5 rounded-lg bg-slate-950 text-slate-300 text-xs leading-relaxed border border-slate-800">
                             <!-- Injected via JS -->
                         </div>
                     </div>
 
                     <!-- COMPARISON CODES -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        
                         <div class="p-3 rounded-lg bg-slate-950/70 border border-slate-800">
                             <div class="text-xs font-bold text-indigo-300 mb-2 flex items-center justify-between">
                                 <span>Gold Standard (Referencia):</span>
                                 <span id="detail-gt-count" class="text-[10px] bg-indigo-950 px-1.5 py-0.5 rounded text-indigo-300 border border-indigo-800">--</span>
                             </div>
-                            <div id="detail-gt-codes" class="flex flex-wrap gap-1.5">
-                                <!-- Injected via JS -->
-                            </div>
+                            <div id="detail-gt-codes" class="flex flex-wrap gap-1.5"></div>
                         </div>
+                        
 
                         <div class="p-3 rounded-lg bg-slate-950/70 border border-slate-800">
                             <div class="text-xs font-bold text-emerald-300 mb-2 flex items-center justify-between">
-                                <span>Predicción LLM Consenso 3/3:</span>
+                                <span>Códigos Asignados (Consenso 3/3):</span>
                                 <span id="detail-pred-count" class="text-[10px] bg-emerald-950 px-1.5 py-0.5 rounded text-emerald-300 border border-emerald-800">--</span>
                             </div>
-                            <div id="detail-pred-codes" class="flex flex-wrap gap-1.5">
-                                <!-- Injected via JS -->
-                            </div>
+                            <div id="detail-pred-codes" class="flex flex-wrap gap-1.5"></div>
                         </div>
                     </div>
 
+                    
                     <!-- DIAGNOSTIC AUDIT BADGES -->
                     <div class="p-3 rounded-lg bg-slate-950/50 border border-slate-800/60 text-xs space-y-1.5 text-slate-400">
                         <div class="font-bold text-slate-300 text-[11px]">Resumen de Clasificación:</div>
-                        <div id="detail-audit-badges" class="flex flex-wrap gap-2 text-[11px]">
-                            <!-- Injected via JS -->
-                        </div>
+                        <div id="detail-audit-badges" class="flex flex-wrap gap-2 text-[11px]"></div>
                     </div>
+                    
 
                 </div>
 
@@ -261,265 +183,102 @@
 
     <!-- FOOTER -->
     <footer class="border-t border-slate-800 bg-slate-950 py-3 text-center text-xs text-slate-500 no-print">
-        <p>Pipeline de Validación Diagnóstica CIF con Modelos de Lenguaje</p>
+        <p>Pipeline de Codificación y Validación CIF &bull; Generado automáticamente el 2026-09-14 11:12</p>
     </footer>
 
-    <!-- JAVASCRIPT LOGIC (100% DINÁMICO) -->
+    <!-- JAVASCRIPT LOGIC -->
     <script>
-        const CASES_DATA = [{"id_code_combination": "001", "id_clinical_text": "001_1", "clinical_text": "Consulta por dolor lumbar, dorsal y cervical, también lateral de cadera. Nos cuenta que siempre ha sido muy activa pero ahora siente que “no merece la pena”. Dice no tener motivación para ninguna actividad. Sin embargo, por las noches está muy activa y le cuesta dormir a pesar de que toma pastillas para el sueño. Siente que las pastillas afectan a su capacidad para hacer el día a día “como si estuviera atontada y no le ayudan a dormir. Tiene como objetivos conseguir dar al menos un paseo y poder dormir al menos 2 hroas.", "icf_codes": ["b130", "b134", "d175", "b280", "e1101"], "predicted_icf_codes_consensus": ["b130", "b134", "b280", "d230", "e1101"], "predictor_model": "gemini-3.7-flash", "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b130", "b134", "b280", "d230", "e1101"], "predicted_icf_it2": ["b130", "b134", "b280", "d230", "e1101"], "predicted_icf_it3": ["b130", "b134", "b280", "d230", "e1101"]}, {"id_code_combination": "001", "id_clinical_text": "001_2", "clinical_text": "Dolor cervical, también lumbar, de hombros, de muñecas, ambos bilaterales. Dificultades para hacer ejercicio porque “se encuentra cansada”. Dice que lo intenta pero nunca consigu emantenerlo por agotamiento. Ha intentado correr, yoga y pilates. El entrenamiento d efuerza le iba mejor pero notaba que luego dormía peor. Además después, por el cansancio, tenía dificultades para hacer el día a día, tiene sensación de que es incapaz de resolver conflictos del día a día, a veces se tira pensando varios minutos antes de poder iniciar una actividad o tomar una decisión como usar una sarten de hierro o una antiadherente. Toma opioides, lo ha intentado dejar porque ha leído que puedne también influir en el dolor.", "icf_codes": ["b130", "b134", "d175", "b280", "e1101"], "predicted_icf_codes_consensus": ["b134", "b280", "b455", "d175", "d230", "e1101"], "predictor_model": "gemini-3.7-flash", "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b134", "b280", "b455", "d175", "d230", "e1101"], "predicted_icf_it2": ["b134", "b280", "b455", "d175", "d230", "e1101"], "predicted_icf_it3": ["b134", "b280", "b455", "d175", "d230", "e1101"]}, {"id_code_combination": "001", "id_clinical_text": "001_3", "clinical_text": "Dolor d emiembros inferiores desde hace 20 años, sensación de fatiga y cansancio general e insomnio de mantenimiento. El dolor comenzó hace 20 años sin motivo aparente, siempre notaba que sus amigos podían hacer más que ella y que si hacía mucho le dolía más el cuerpo en general. Después de seo comenzó con sensación de que estaba siempre ansada. Siente que ahora va un paso más y no solo le cuesta por cansancio, si no que nota que “la cabeza no le da”. Toma estatinas desde hace más de 5 años, medicación para la hipertensión y antiinflamatorios cuando “no aguanta más”, aunque no nota alivio especialmente", "icf_codes": ["b130", "b134", "d175", "b280", "e1101"], "predicted_icf_codes_consensus": ["b130", "b134", "b280", "e1101"], "predictor_model": "gemini-3.7-flash", "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b130", "b134", "b280", "e1101"], "predicted_icf_it2": ["b130", "b134", "b280", "b455", "e1101"], "predicted_icf_it3": ["b130", "b134", "b280", "e1101"]}, {"id_code_combination": "002", "id_clinical_text": "002_1", "clinical_text": "Varón de 50 años que acude a consulta por dolor lumbar de 2 semanas de evolución.\nRefiere que se hizo daño trabajando (construcción), posiblemente en alguna acción cargando peso, aunque no recuerda bien. Acudió al médico de su mutua y le aconsejó reposo y analgésicos, pero no lo mantiene y sigue trabajando a pesar del dolor.\n\nSíntomas / signos:\nEs un dolor localizado en la región central de la espalda y zona glútea que asocia principalmente al movimiento (flexión lumbar y pasar a bipedestación desde sedestación). El dolor le va aumentando durante el día, sobre todo en el trabajo, llegando a tener dolor durante la noche y afectando su descanso. Los fines de semana le duele menos, ya que tiene menos actividad.\nEscala numérica de intensidad de dolor: 7/10 en los peores momentos.\n\nAspectos psicosociales: Durante la entrevista explica que está intentando evitar esos movimientos en el trabajo, centrándose en tareas que no le duelen. Pero no quiere dejar de trabajar porque la empresa tiene mucho trabajo ahora, siente que tiene que ayudar o si no podrían echarle (ha habido despidos antes). Su situación económica le genera ansiedad y no puede dejar el trabajo.", "icf_codes": ["b152", "b1602", "b280", "d240", "d850", "e570"], "predicted_icf_codes_consensus": ["b152", "b1602", "b280", "d240", "d850", "e570"], "predictor_model": "gemini-3.7-flash", "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b152", "b1602", "b280", "d240", "d850", "e570"], "predicted_icf_it2": ["b152", "b1602", "b280", "d240", "d850", "e570"], "predicted_icf_it3": ["b152", "b1602", "b280", "d240", "d850", "e570"]}, {"id_code_combination": "002", "id_clinical_text": "002_2", "clinical_text": "Mujer, 36 años. Acude a consulta por dolor cervical crónico (años de evolución).\nRefiere que lleva muchos años así, desde el instituto. Describe su dolor como un dolor que siempre está presente pero de intensidad variable. No sabe localizar un punto concreto de dolor, pero se señala desde la base del craneo hacia la cabeza. Comenta que es \"dolor tensional por el estrés\".\nEscala numerica de intensidad del dolor: oscila entre un 2/10 y un 5/10. Asocia el aumento del dolor al estrés y a épocas en las que tiene más carga de trabajo.\n\nCuando le pregunto por si ha visto qué es lo que le mejora el dolor, me dice que la\nmedicación le alivia parcialmente y que en vacaciones, cuando tiene más tiempo para retomar el deporte (salir a caminar, pádel) siente que le duele menos.\n\nAspectos psicosociales: Al iniciar la anamnesis, la paciente muestra \"poca confianza\" en el tratamiento, refiriendo que ha pasado por muchos fisios y que está aquí porque lo ha pedido su médico, pero sabe que su dolor no va a mejorar nunca.", "icf_codes": ["b152", "b1602", "b280", "d240", "d850", "e570"], "predicted_icf_codes_consensus": ["b1602", "b280", "d850", "d920", "e1101", "e355"], "predictor_model": "gemini-3.7-flash", "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b1602", "b280", "d850", "d920", "e1101", "e355"], "predicted_icf_it2": ["b1602", "b280", "d850", "d920", "e1101", "e355"], "predicted_icf_it3": ["b1602", "b280", "d850", "d920", "e1101", "e355"]}, {"id_code_combination": "002", "id_clinical_text": "002_3", "clinical_text": "Mujer de 58 años que acude a consulta por dolor generalizado.\nRefiere que cree que tiene fibromialgia aunque no tiene diagnóstico médico confirmado todavía. Se encuentra de baja desde hace 10 meses porque se siente incapaz de hacer su trabajo (enfermera) y lleva desde entonces con pruebas médicas para confirmar el diagnóstico.\n\nSíntomas / signos:\nExplica que \"le duele todo el cuerpo siempre\". Las zonas que más dolor presentan son ambos hombros y la espalda (tanto zona torácica como zona lumbar). No se aprecia inflamación y pérdida de movilidad en ninguna de las articulaciones, aunque el rango de movimiento no está libre de dolor. La intensidad del dolor de hombros es de un 6/10 (escala\nnumérica), en zona torácica es 5/10 y en zona lumbar 5/10. El comportamiento de los síntomas varía:\n- Hombros parece que hay un factor mecánico, ya que hay movimientos como la ABD que incrementan más su dolor que otros.\n- Dolor torácico parece ser un dolor continuo y no varía por factores mecánicos\n- Dolor lumbar empeora con la flexión\n\nTanto el dolor de hombros como el dolor lumbar empeoran con el movimiento y con la carga. Dice que desde hace unos meses ya no puede coger en brazos a su nieto, ahora que pasa más tiempo con él (se encarga de él todo el día mientras sus padres trabajan). Para ella, esto (no poder coger en brazos a su nieto) tiene un impacto emocional importante.\n\nComenta que no tiene prisa por volver a trabajar. Ahora su objetivo es poder ayudar a su hija cuidando de su nieto.", "icf_codes": ["b152", "b1602", "b280", "d240", "d850", "e570"], "predicted_icf_codes_consensus": ["b152", "b280", "d430", "d850"], "predictor_model": "gemini-3.7-flash", "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b152", "b280", "d430", "d760", "d850"], "predicted_icf_it2": ["b152", "b280", "d430", "d850", "e570"], "predicted_icf_it3": ["b152", "b280", "d430", "d760", "d850"]}, {"id_code_combination": "004", "id_clinical_text": "004_1", "clinical_text": "Varón, 43 años, conductor de metro jornada completa. Colesterol. Fumador. Sedentario. HTA.\n\n\nAcude por dolor en zona anterior del hombro derecho desde hace algo más de 5 años (EVA 3/10). Dolor difuso que a veces irradia hacia el resto del MSD y a la zona cervical con posiciones mantenidas. Dolor más intenso (EVA 6/10) endeterminados movimientos. \nLe recomendaron fortalecer el hombro, pero piensa que los síntomas empeorarían. Cree que no saben lo que le pasa porque sino no le habrían recomendado movilizar, dice que lo que tendrían que hacer es operarle para quitarle lo que tenga mal y así poder recuperarse. \nA veces sale a andar (15-30min) pero suele acabar fatigado y con más dolor en la zona, cada vez sale menos. Solo sale al cine una vez al mes con su familia, el resto del tiempo en casa viendo TV o móvil.\n\n\nEXPLORACIÓN\nFlex y abd limitación por dolor a 90º. ++ contra R. 4/5 \nRE limitación por dolor 30º. +++ contra R. 3/5 \nRI conservada sin dolor. 5/5 \nExt conservada con dolor ligero al final de ROM. 5/5 ", "icf_codes": ["b1602", "b280", "b455", "b730", "d920"], "predicted_icf_codes_consensus": ["b1602", "b280", "b455", "d450", "d920"], "predictor_model": "gemini-3.7-flash", "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b1602", "b280", "b455", "b730", "d450", "d850", "d920", "e310"], "predicted_icf_it2": ["b1602", "b280", "b455", "b730", "d450", "d850", "d920"], "predicted_icf_it3": ["b1602", "b280", "b455", "d450", "d920", "e310"]}, {"id_code_combination": "004", "id_clinical_text": "004_2", "clinical_text": "Mujer 22 años, estudiante de farmacia (5º). No tiene antecedentes relevantes. Bailarina de ballet (3º conservatorio)\n\n\nComenzó con dolor en zona cervical hace alrededor de 3 años. El dolor comenzó como una sensación de “tensión” en la zona posterior del cuello, pero ha ido generalizándose hacia zona trapecios, interescapular, paravertebral dorsal e incluso hombros. Dolor no constante, aparece de manera intermitente (3-4 días/sem) pero no lo relaciona con nada, no entiende por qué aparece. Cefaleas frecuentes durante los cuadros álgicos, pero no mareos ni parestesias en MMSS.\nSigue con práctica de baile habitual, (15h/sem), no considera quetenga que reducir actividad, “no quiere ni puede permitírselo, no cree que tenga nada que ver con su dolor”. Durante los meses de verano (2 meses de vacaciones) suele estar mejor, pero lo relaciona al calor, que le gusta y siempre le ha venido bien. \nPoco tiempo libre, solo queda con una amiga del conservatorio de vez en cuando. En vacaciones se va al pueblo con su familia, allí tiene un grupo de amigos de toda la vida.\n\n\nEXPLORACIÓN\nMusculatura con mucha tensión y dolor intenso(EVA 8-9/10) a la palpación.\nEn el momento de la exploración viene con dolor. Dolor (EVA 4/10) en todos los movimientos, pero ROM conservado. Fuerza conservada. No síntomas neurológicos.", "icf_codes": ["b1602", "b280", "b455", "b730", "d920"], "predicted_icf_codes_consensus": ["b1602", "b280", "d920", "e310"], "predictor_model": "gemini-3.7-flash", "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b1602", "b280", "d920", "e310"], "predicted_icf_it2": ["b1602", "b280", "d920", "e310"], "predicted_icf_it3": ["b1602", "b280", "d920", "e310"]}, {"id_code_combination": "004", "id_clinical_text": "004_3", "clinical_text": "Mujer 34 años. Administrativa. 1 hijo de 6 meses. Hacía crossfit antes del embarazo y durante. \n\n\nAcude por dolor lumbar desde hace más de 1 año. Comenzó durante el 3er mes de embarazo y desde entonces no ha desaparecido. Ha ido variando la intensidad (EVA 3/10 a 8/10) a lo largo del año, a veces sube y otras baja. Dolordifuso en zona lumbar y sacra, aumenta a la extensión. No síntomas ciáticos. Ha dejado de hacer ejercicios por el dolor intenso cuando va a crossfit.\nDurante el embarazo hacía crossfit sin adaptaciones, su entrenadora le adaptaba ejercicios e intentaba que activase el SP y el TrA junto con respiraciones pero se le daba malasí que pasó de ello. Ella piensa que eran “chorradas”, que ahora estaba de moda el ejercicio en el embarazo y por eso querían meter “tonterías” en los entrenamientos para hacerlos más “interesantes”, pero eso no iba con ella.\nPasa mucho tiempo con su hijo y su marido. También ve a su familia. No tiene mucho tiempo libre, pero le gustaría volver a entrenar, es su principal objetivo. Sale mucho a caminar, no suele empeorar síntomas a no ser que se pase (más de 2h seguidas caminando).\n\n\nEXPLORACIÓN\nLasegue -. \nPruebas ASI +++\nExtensión ++, flexión ok. \nMolestias a rot, inclinación ok.\nDebilidad glúteo medio. 4/5 \n\n\nDiástasis de rectos abdominales infraumbilical (2 cm con mal tono de la LA), supra no separación pero mal tono LA. Siempre ha realizado ejercicios en apnea. No activa TrA de manera automática, ni sabe activar el SP. Hiperactivación musculatura superficial (rectos y OE). IUE frecuente 2 veces/día. \n\n\nDurante la evaluación se muestra incómoda y desconfiada por centrar la valoración en el CALP, incide en varias ocasiones en que su dolor es lumbar y que no tiene nada que ver con el abdomen o con sus pérdidas de orina. No entiende la valoración. Explico importancia de CALP en el dolor lumbar.", "icf_codes": ["b1602", "b280", "b455", "b730", "d920"], "predicted_icf_codes_consensus": ["b280", "b730", "d920", "e310"], "predictor_model": "gemini-3.7-flash", "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b280", "b730", "d920", "e310"], "predicted_icf_it2": ["b280", "b730", "d920", "e310"], "predicted_icf_it3": ["b280", "b730", "d450", "d760", "d920", "e310"]}, {"id_code_combination": "005", "id_clinical_text": "005_1", "clinical_text": "Paciente varón de 28 años, de ocupación conductor (Uber) y estilo de vida sedentario, consulta por lumbalgia asociada a sedestación prolongada. Describe los síntomas como una sensación de pellizco y quemazón lumbar que se incrementa hacia el final de la jornada laboral. El dolor disminuye temporalmente al interrumpir la marcha del vehículo y realizar estiramientos, pero persiste el malestar al reanudar la postura de conducción. La sintomatología no se reproduce con el movimiento general.", "icf_codes": ["b280", "d230", "d430", "d450", "d640"], "predicted_icf_codes_consensus": ["b280", "d850"], "predictor_model": "gemini-3.7-flash", "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b280", "d850"], "predicted_icf_it2": ["b280", "d850"], "predicted_icf_it3": ["b280", "d850"]}, {"id_code_combination": "005", "id_clinical_text": "005_2", "clinical_text": "Paciente de 68 años, jubilada, acude a consulta refiriendo una gran pesadez en las piernas que casi le impide subir las escaleras de su casa. Llama la atención el marcado carácter \"estacional\" de su malestar: los dolores se han vuelto insoportables durante los meses de calor, mientras que en invierno sube los escalones casi sin enterarse. Aunque ha probado la clásica receta casera de tumbarse en el sofá con las piernas en alto sobre un cojín, el alivio es solo un leve respiro y las molestias persisten. Todo apunta a que las altas temperaturas le están pasando factura a su circulación.", "icf_codes": ["b280", "d230", "d430", "d450", "d640"], "predicted_icf_codes_consensus": ["b280"], "predictor_model": "gemini-3.7-flash", "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b280"], "predicted_icf_it2": ["b280"], "predicted_icf_it3": ["b280"]}, {"id_code_combination": "005", "id_clinical_text": "005_3", "clinical_text": "Paciente varón de 56 años, fontanero de profesión, acude a consulta por un dolor punzante e incesante en el codo derecho. La molestia se ha vuelto tan incapacitante que le ha obligado a coger la baja laboral, con el consecuente perjuicio económico que ello le supone. Describe un dolor rebelde que no da tregua y que, en ocasiones, se irradia hacia los dedos acompañado de una molesta pérdida de sensibilidad en el antebrazo. La pérdida de fuerza en la mano derecha es severa: no puede cargar peso en su trabajo ni gestionar tareas cotidianas tan simples como sacar los platos del lavavajillas para colocarlos en la alacena. Ninguna postura ni remedio le aporta alivio hasta el momento.", "icf_codes": ["b280", "d230", "d430", "d450", "d640"], "predicted_icf_codes_consensus": ["b280", "b730", "d430", "d640", "d850"], "predictor_model": "gemini-3.7-flash", "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b280", "b730", "d430", "d640", "d850"], "predicted_icf_it2": ["b280", "b730", "d430", "d640", "d850"], "predicted_icf_it3": ["b280", "b730", "d430", "d640", "d850"]}, {"id_code_combination": "006", "id_clinical_text": "006_1", "clinical_text": "Adolescente de 12 años acude a consulta por dolor de cadera tras notar un pinchazo desde hace más de un año tras un partido de hockey, no acudió al médico en ese momento, actualmente las radiografías no muestran lesión, no realizada RMN. Actualmente refiere dificultad para llevar la mochila del colegio, y para jugar con su padre al hockey, que es su principal hobby. Le gustaría volver a poder jugar.\n\nComenta que el dolor comenzó en la cadera pero que actualmente llega hasta el pie.\n\nExploración física: movilidad pasiva indolora salvo en extensión de cadera en prono, isométrico en flexión doloroso, FADDIR +,FABDRE +, desrot test -, SLR + con diferenciación de tobillo. Dolor a extensión lumbar activa de pie, no dolor al levantarse de la camilla ni en la sentadilla.", "icf_codes": ["b280", "d430", "d760", "d920"], "predicted_icf_codes_consensus": ["b280", "d430", "d920"], "predictor_model": "gemini-3.7-flash", "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b280", "d430", "d920"], "predicted_icf_it2": ["b280", "d430", "d920"], "predicted_icf_it3": ["b280", "d430", "d920"]}, {"id_code_combination": "006", "id_clinical_text": "006_2", "clinical_text": "Varón de 40 años, acude a consulta por dolor de espalda recurrente que comenzó hace 5 años. Aproximadamente un episodio al mes. Trabaja de conductor de taxi, refiere no tener problemas para trabajar pero le cuesta meter maletas en el maletero del taxi. Además dice tener dificultades para viajar, los episodios le impiden planificar viajes pues si le dan apenas puede moverse. Esto le limita a la hora de buscar espacios comunes con su pareja. Le gustaría poder reducir la frecuencia de episodios o saber qué puede hacer cuándo aparecen.\n\nExploración física: dolor a movimientos activos lumbares, principalmente flexión, dolor central en extensión, SLR reproduce dolor a nivel lumbar, Bragard +, slump +. EIL reducee dolor a la movilidad activa, slump y SLR. \n\n RM:12/24 \n\n Rx: Enseño ejercicios repetidos lumbares EIL 3-5/día x10 y enseño posibles respuestas y señales de stop", "icf_codes": ["b280", "d430", "d760", "d920"], "predicted_icf_codes_consensus": ["b280", "d430", "d770", "d920"], "predictor_model": "gemini-3.7-flash", "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b280", "d430", "d770", "d920"], "predicted_icf_it2": ["b280", "d430", "d770", "d920"], "predicted_icf_it3": ["b280", "d430", "d770", "d920"]}, {"id_code_combination": "006", "id_clinical_text": "006_3", "clinical_text": "Mujer 70 años, acude a consulta por dolor de MSD que apareció sin motivo aparente, dice que lo tiene 'de toda la vida'. Es activa, realiza actividades en el centro cultural del barrio como yoga y cerámica con su hermana. Se siente limitada a la hora de realizar yoga, sigue realizando la actividad para ver a su hermana.\n\nEn exploracion no dolor a movimientos pasivos de hombro, dolor a isométricos en RE, F, ABD y push, no observo limitación de movimiento a movimiento activo aunque refiere dolor. Dificultad para levantar mancuerna de 1kg con ese MS con respecto a contralateral. \n\n QuickDash:25% \n\n Tto: Enseño ejercicios isométricos de hombro, explico historia natural y gestión de la carga según respuesta sintomática, cito en una semana para progresar ejercicios.", "icf_codes": ["b280", "d430", "d760", "d920"], "predicted_icf_codes_consensus": ["b280", "d430", "d920", "e310"], "predictor_model": "gemini-3.7-flash", "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b280", "d430", "d760", "d920", "e310"], "predicted_icf_it2": ["b280", "d430", "d760", "d920", "e310"], "predicted_icf_it3": ["b280", "d430", "d920", "e310"]}, {"id_code_combination": "007", "id_clinical_text": "007_1", "clinical_text": "Manuel 45 años\nDolor lumbar con irraciacion a miembro inferior derecho de 4 meses de evolución, origen no traumático, ligera limitación funcional, no limitación de sus actividades del día a día, en paro, no practica una actividad física regular. No refiere mejoría desde el inicio de los síntomas.\nDolor que aparece con la actividad física moderada y la marcha, no dolor en reposo ni nocturno, no dolor al slump test, no se aprecia pérdida de sensibilidad, motricidad o reflejos en miembro inferior, no dolor a la palpación, amplitud articular completa en activo y pasivo.\nNo antecedentes médicos relevantes, actualmente con AINES prescritos por su médico, no refiere mejoría con ellos aunque los sigue tomando.", "icf_codes": ["b280", "d450", "e1101"], "predicted_icf_codes_consensus": ["b280", "e1101", "e355"], "predictor_model": "gemini-3.7-flash", "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b280", "d850", "e1101", "e355"], "predicted_icf_it2": ["b280", "e1101", "e355"], "predicted_icf_it3": ["b280", "d850", "e1101", "e355"]}, {"id_code_combination": "008", "id_clinical_text": "008_1", "clinical_text": "Antecedente de fractura proximal de humero dcho sin desplazamiento hace 3 años, de origen traumatico. Actualmente dolor en todo el miembro superior derecho e izquierdo. Limitación funcional del miembro superior derecho severa, limitación de sus actividades de la vida diaria, actualmente en baja laboral. Refiere ligera mejoría desde el inicio de los sintomas \nDolor con cualquier movimiento del hombro, dolor nocturno que le despierta por las noches de manera frecuente, dice que no encuentra la posición. Dolor a la palpación en cualquier punto de la región del hombro, no síntomas cervicales. No síntomas de tipo nervioso.\n\nNo antecedentes médicos relevantes, actualmente con Aines prescrito por su medico, refiere mejoría.", "icf_codes": ["b134", "b280", "d230", "d850", "e1101"], "predicted_icf_codes_consensus": ["b134", "b280", "d230", "d850", "e1101", "e355"], "predictor_model": "gemini-3.7-flash", "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b134", "b280", "d230", "d850", "e1101", "e355"], "predicted_icf_it2": ["b134", "b280", "d230", "d850", "e1101", "e355"], "predicted_icf_it3": ["b134", "b280", "d230", "d850", "e1101", "e355"]}, {"id_code_combination": "009", "id_clinical_text": "009_1", "clinical_text": "Dolor de hombro dcho asociado a tendinopatia del manguito rotador de 10 meses de evolución, origen no traumatico refiere mejoría significativa trasa haber empezado una rutina de ejercicios que ha empezado ella misma, ligera limitación funcional, pérdida de los últimos grados de elevación y rotación interna, no limitación de sus actividades de la vida diaria, sigue realizándolas aunque tenga un poco de dolor, no trabaja.\nA la exploración dolor al movimiento contra resistencia, dolor a la elevación y a la rotación interna, no rom activo completo si completo en pasivo. Refiere ligera pérdida de fuerza generalizada del miembro superior, no síntomas de tipo nervioso, ni síntomas en la región cervical \nAntecedentes, diabetes e hipertensión, medicación para la hipertensión", "icf_codes": ["b280", "b730"], "predicted_icf_codes_consensus": ["b280", "b730", "e1101"], "predictor_model": "gemini-3.7-flash", "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b280", "b730", "e1101"], "predicted_icf_it2": ["b280", "b730", "e1101"], "predicted_icf_it3": ["b280", "b730", "d850", "e1101"]}, {"id_code_combination": "010", "id_clinical_text": "010_1", "clinical_text": "1. Motivo de consulta\n\nLa paciente SKI acude a consulta tras sufrir un accidente de tráfico por alcance posterior, comenzando desde ese momento un cuadro de dolor localizado principalmente en la región cervical, acompañado de dolor lumbar, cefaleas frecuentes, mareos, acúfenos y molestias en la articulación temporomandibular. Refiere una sensación constante de rigidez cervical, con importante limitación para realizar movimientos del cuello y aumento del dolor al permanecer sentada durante periodos prolongados, conducir o realizar actividades que requieran movimientos repetitivos de la cabeza.\n\nAdemás del dolor musculoesquelético, manifiesta episodios de inestabilidad, cefaleas de predominio occipital y molestias mandibulares durante la masticación, síntomas que han condicionado una importante disminución de su calidad de vida. Explica que la evolución se vio afectada por la interrupción prematura del tratamiento rehabilitador, lo que favoreció la persistencia de la sintomatología y dificultó su recuperación funcional. En el momento de la valoración refiere una intensidad del dolor de 8/10 en la región cervical y de 6/10 en la región lumbar, con limitación para desarrollar sus actividades habituales.\n\n2. Screening médico general\n\nDurante la entrevista clínica la paciente refiere haber sido valorada médicamente tras el accidente,realizándose pruebas radiológicas que descartaron lesiones óseas o estructurales de gravedad. No presenta antecedentes de fracturas, intervenciones quirúrgicas ni enfermedades reumatológicas o neurológicas relevantes. Como consecuencia del accidente inició tratamiento farmacológico analgésico, llegando a desarrollar una dependencia al consumo de opioides debido a la persistencia del dolor.\n\nAsimismo, refiere encontrarse en seguimiento psicológico por un cuadro de ansiedad relacionado con el accidente y permanecer en situación de incapacidad temporal durante parte del proceso de recuperación. No presenta alergias medicamentosas conocidas ni se objetivan signos de alarma neurológicos durante la valoración fisioterapéutica.\n\n3. Perfil del paciente\n\nAntes del accidente la paciente desarrollaba su actividad laboral con normalidad y mantenía un estilo de vida activo, realizando actividad física de intensidad moderada y siendo completamente independiente para todas las actividades de la vida diaria. Tras el accidente ha reducido considerablemente su nivel de actividad debido al dolor persistente, los mareos y la inseguridad que le generan determinados movimientos cervicales.\n\nLas molestias han condicionado dificultades para conducir, permanecer sentada durante largos periodos, realizar tareas domésticas y mantener una jornada laboral normal. La persistencia del dolor y la aparición de ansiedad han tenido también repercusión sobre su estado emocional y su descanso nocturno. Su principal objetivo es recuperar la movilidad cervical, disminuir el dolor y reincorporarse progresivamente a su vida personal y laboral con la mayor normalidad posible.\n\n4. Examen físico\n\nDurante la exploración se observa una actitud antiálgica con rectificación de la lordosis cervical y una importante hipertonía de la musculatura paravertebral cervical, trapecios superiores, musculatura suboccipital y región cervicodorsal. La palpación reproduce el dolor habitual de la paciente y pone de manifiesto una elevada sensibilidad muscular tanto en la región cervical como lumbar. También se objetiva dolor a la palpación de la musculatura masticatoria y limitación funcional de la articulación temporomandibular.\n\nLa movilidad activa cervical se encuentra limitada en todos los planos por dolor y rigidez, mientras que la movilidad lumbar presenta una ligera limitación en flexión y extensión. Durante determinados movimientos cervicales la paciente refiere sensación de mareo e inestabilidad, aunque la exploración neurológica resulta normal, con fuerza, sensibilidad y reflejos conservados. Los hallazgos clínicos son compatibles con un síndrome postraumático secundario a latigazo cervical, asociado a disfunción temporomandibular y dolor mecánico cervicolumbar.", "icf_codes": ["b130", "b134", "b152", "b280", "b455", "b730", "b760", "d230", "d430", "d640", "d850", "d920", "e1101", "e410", "e570"], "predicted_icf_codes_consensus": ["b130", "b134", "b152", "b280", "d230", "d850", "e1101", "e570"], "predictor_model": "gemini-3.7-flash", "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b130", "b134", "b152", "b280", "d230", "d640", "d850", "e1101", "e355", "e570"], "predicted_icf_it2": ["b130", "b134", "b152", "b280", "d230", "d640", "d850", "e1101", "e570"], "predicted_icf_it3": ["b130", "b134", "b152", "b280", "d230", "d850", "e1101", "e355", "e570"]}, {"id_code_combination": "011", "id_clinical_text": "011_1", "clinical_text": "1. Motivo de consulta\n\nEl paciente PLS acude a consulta por presentar un cuadro de dolor cervical de varios meses de evolución, de inicio insidioso y sin un mecanismo traumático claramente identificado. Refiere dolor localizado en la región cervical baja, de forma bilateral, acompañado de sensación de rigidez y quemazón en la transición cervicodorsal. Además, presenta dolor en la región dorsal media que aparece de forma intermitente y aumenta conforme avanza la jornada laboral o tras mantener posturas estáticas durante largos periodos.\n\nDescribe el dolor como continuo, con episodios de mayor intensidad en los que aparecen pinchazos localizados en la región de C7-T1. La sintomatología se incrementa con los movimientos repetitivos del cuello, la permanencia prolongada frente al ordenador y la conducción, mientras que mejora parcialmente con el reposo y la aplicación de calor local. El paciente refiere que las molestias han ido aumentando progresivamente, limitando tanto su rendimiento laboral como la práctica de actividad física habitual.\n\n2. Screening médico general\n\nDurante la anamnesis el paciente no refiere antecedentes traumáticos de relevancia ni intervenciones quirúrgicas relacionadas con la columna vertebral. Niega fracturas, enfermedades neurológicas, reumatológicas o procesos sistémicos que puedan justificar la sintomatología actual. Tampoco presenta alergias medicamentosas conocidas ni tratamiento farmacológico habitual, salvo el uso ocasional de analgésicos y antiinflamatorios cuando el dolor aumenta de intensidad.\n\nNo se identifican signos de alarma como pérdida de fuerza, alteraciones de la marcha, trastornos esfinterianos, pérdida de peso inexplicada o síntomas compatibles con patología grave. La evolución clínica y las características del dolor orientan hacia un proceso de origen mecánico, aunque por la persistencia de la sintomatología y la localización del dolor se considera necesario descartar una posible afectación discal mediante pruebas de imagen complementarias.\n\n3. Perfil del paciente\n\nEl paciente desarrolla una actividad laboral que requieremantener posturas mantenidas y movimientos repetitivos de la columna cervical durante gran parte de la jornada. Refiere que el dolor aumenta especialmente al final del día y durante periodos prolongados de trabajo frente al ordenador. Antes del inicio del cuadro mantenía un estilo de vida activo, practicando ejercicio físico de forma ocasional, aunque en los últimos meses ha reducido considerablemente su actividad debido al incremento del dolor y la rigidez cervical.\n\nMantieneautonomía para todas las actividades de la vida diaria, aunque refiere dificultad para conducir durante trayectos largos, permanecer sentado durante mucho tiempoy realizar determinadas tareas domésticas o deportivas. Su principal objetivo es disminuir el dolor, recuperar la movilidad cervical y volver a realizar sus actividades habituales sin limitaciones.\n\n4. Examen físico\n\nEn la exploración se aprecia una ligera anteriorización de la cabeza y aumento del tono de la musculaturacervicodorsal, especialmente en trapecios superiores, elevador de la escápula y musculatura paravertebral cervical. La palpación reproduce el dolor habitual del paciente, observándose una marcada sensibilidad en la transición cervicodorsal y sobre la musculatura paravertebral baja cervical. La movilidad activa cervical se encuentra limitada principalmente en los movimientos de flexión y extensión, que reproducen el dolor descrito por el paciente. La rotación cervical también provoca molestias, aunque con menor intensidad. La exploración neurológica muestra fuerza, sensibilidad y reflejos conservados, sin evidenciar déficits neurológicos objetivos. Los hallazgos clínicos son compatibles con una cervicalgia mecánica acompañada de sobrecarga muscular cervicodorsal, sin poder descartar completamente una afectación discal debido a la persistencia de los síntomas.", "icf_codes": ["b280", "b455", "b730", "d230", "d430", "d850", "d920", "e355", "e570"], "predicted_icf_codes_consensus": ["b280", "d850", "d920", "e1101"], "predictor_model": "gemini-3.7-flash", "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b280", "d230", "d640", "d850", "d920", "e1101"], "predicted_icf_it2": ["b280", "d230", "d640", "d850", "d920", "e1101"], "predicted_icf_it3": ["b280", "d850", "d920", "e1101"]}, {"id_code_combination": "012", "id_clinical_text": "012_1", "clinical_text": "1. Motivo de consulta\n\nLa paciente RMG acude a consulta tras haber sufrido un accidente de tráfico por alcance posterior, presentando desde entonces un cuadro persistente de dolor cervical que no ha remitido pese al tratamiento fisioterapéutico previo realizado en otro centro. Refiere dolor localizado en la región cervical posterior con irradiación hacia el hombro y miembro superior izquierdo, acompañado de sensación de rigidez, contractura muscular y episodios de parestesias en la extremidad superior izquierda. La sintomatología aumenta con los movimientos del cuello, especialmente durante la rotación y la flexión lateral, así como tras permanecer largos periodos sentada, conducir o realizar tareas domésticas.\n\nLa paciente cuantifica el dolor con una intensidad aproximada de 7/10 según la escala EVA, describiéndolo como un dolor continuo, de características mecánicas, que limita sus actividades habituales y afecta a su descanso nocturno debido a la dificultad para encontrar una postura cómoda. Manifiesta preocupación por la persistencia de los síntomas tras haber recibido tratamiento previo, motivo por el que solicita una nueva valoración fisioterapéutica.\n\n2. Screening médico general\n\nDurante la entrevista clínica la paciente refiere haber sido diagnosticada médicamente de un esguince cervical tras el accidente de tráfico, descartándose lesiones óseas mediante las pruebas complementarias realizadas. Niega antecedentes de fracturas, cirugías cervicales o enfermedades reumatológicas y neurológicas de interés. Tampoco presenta antecedentes de traumatismos cervicales previos de relevancia.\n\nNo refiere alergias medicamentosas conocidas ni enfermedades sistémicas que contraindiquen el tratamiento fisioterapéutico. Durante los primeros días posteriores al accidente siguió tratamiento farmacológico con analgésicos y antiinflamatorios, consiguiendo una mejoría parcial de la sintomatología. En la valoración no se identifican signos de alarma ni datos compatibles con afectación neurológica grave, aunque la paciente refiere parestesias ocasionales en el miembro superior izquierdo que deberán ser monitorizadas durante la evolución clínica.\n\n3. Perfil del paciente\n\nLa paciente desarrolla una actividad laboral que requiere mantener posturas mantenidas durante gran parte de la jornada, circunstancia que incrementa las molestias cervicales conforme transcurren las horas. Antes del accidente realizaba sus actividades personales, laborales y domésticas sin limitaciones, manteniendo además una actividad física moderada de forma habitual. Desde la aparición de la lesión ha reducido considerablemente dichas actividades debido al dolor y a la pérdida de movilidad cervical.\n\nEn su vida diaria refiere dificultad para conducir, trabajar frente al ordenador durante periodos prolongados, realizar tareas domésticas y mantener posiciones mantenidas. Su principal objetivo es recuperar la movilidad completa del cuello, eliminar el dolor y reincorporarse a su ritmo habitual de vida sin limitaciones funcionales.\n\n4. Examen físico\n\nEn la exploración se observa una actitud antiálgica con ligera rectificación de la lordosis cervical y aumento del tono muscular en ambos trapecios, elevador de la escápula, musculatura suboccipital, esternocleidomastoideos y escalenos, siendo más evidente la afectación en el lado izquierdo. La palpación reproduce el dolor habitual de la paciente, apreciándose múltiples puntos de hipersensibilidad y contractura muscular.\n\nLa movilidad activa cervical se encuentra limitada en todos los planos por dolor, especialmente durante la rotación y la flexión lateral izquierda. La exploración neurológica muestra fuerza y sensibilidad conservadas, sin déficits motores objetivos. Las maniobras de Jackson y Spurling resultan negativas, descartando una afectación radicular significativa durante la valoración. Tampoco se objetivan alteraciones vestibulares ni signos de compromiso neurológico central. Los hallazgos clínicos son compatibles con un esguince cervical postraumático en evolución, acompañado de una importante sobrecarga muscular cervicoescapular.", "icf_codes": ["b134", "b280", "d230", "d850", "e355", "e1101"], "predicted_icf_codes_consensus": ["b134", "b280", "d230", "d850", "e355", "e1101"], "predictor_model": "gemini-3.7-flash", "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b134", "b280", "d230", "d850", "e355", "e1101"], "predicted_icf_it2": ["b134", "b280", "d230", "d850", "e1101", "e355"], "predicted_icf_it3": ["b134", "b280", "d230", "d850", "e1101", "e355"]}];
-        const F1_DATA = [{"modelo_id": "gemma_31b", "modelo_nombre": "Gemma-4-31B-it", "metricas": {"n_historias": 114, "n_clases": 24, "soporte_total": 465, "exact_matches_n": 99, "emr_pct": 86.8421052631579, "confusion_global": {"tp": 458, "fp": 12, "fn": 7}, "micro": {"precision": 0.9744680851063829, "recall": 0.9849462365591398, "f1": 0.9796791443850267}, "macro": {"precision": 0.9689479740031209, "recall": 0.9821428571428572, "f1": 0.9730513601650994}, "weighted": {"precision": 0.9775108588438761, "recall": 0.9849462365591398, "f1": 0.9793686750759285}, "por_clase": {"b130": {"tp": 12, "fp": 0, "fn": 0, "soporte": 12, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Funciones relacionadas con la energía y los impulsos"}, "b134": {"tp": 15, "fp": 0, "fn": 0, "soporte": 15, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Funciones del sueño"}, "b147": {"tp": 9, "fp": 0, "fn": 0, "soporte": 9, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Funciones psicomotoras"}, "b152": {"tp": 15, "fp": 1, "fn": 0, "soporte": 15, "precision": 0.9375, "recall": 1.0, "f1": 0.967741935483871, "nombre": "Funciones emocionales"}, "b1602": {"tp": 21, "fp": 0, "fn": 0, "soporte": 21, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Contenido del pensamiento"}, "b280": {"tp": 105, "fp": 0, "fn": 0, "soporte": 105, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Sensación de dolor"}, "b455": {"tp": 12, "fp": 0, "fn": 0, "soporte": 12, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Tolerancia al ejercicio físico"}, "b730": {"tp": 15, "fp": 0, "fn": 0, "soporte": 15, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Funciones relacionadas con la fuerza muscular"}, "b760": {"tp": 9, "fp": 2, "fn": 0, "soporte": 9, "precision": 0.8181818181818182, "recall": 1.0, "f1": 0.9, "nombre": "Control de los movimientos voluntarios"}, "d175": {"tp": 12, "fp": 0, "fn": 0, "soporte": 12, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Resolver problemas"}, "d230": {"tp": 15, "fp": 2, "fn": 0, "soporte": 15, "precision": 0.8823529411764706, "recall": 1.0, "f1": 0.9375, "nombre": "Llevar a cabo rutinas diarias"}, "d240": {"tp": 20, "fp": 0, "fn": 1, "soporte": 21, "precision": 1.0, "recall": 0.9523809523809523, "f1": 0.975609756097561, "nombre": "Manejo del estrés y demandas psicológicas"}, "d430": {"tp": 15, "fp": 0, "fn": 0, "soporte": 15, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Levantar y llevar objetos"}, "d450": {"tp": 18, "fp": 0, "fn": 0, "soporte": 18, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Andar y desplazarse"}, "d640": {"tp": 15, "fp": 0, "fn": 0, "soporte": 15, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Realizar los quehaceres de la casa"}, "d760": {"tp": 20, "fp": 1, "fn": 1, "soporte": 21, "precision": 0.9523809523809523, "recall": 0.9523809523809523, "f1": 0.9523809523809523, "nombre": "Relaciones familiares"}, "d770": {"tp": 12, "fp": 1, "fn": 0, "soporte": 12, "precision": 0.9230769230769231, "recall": 1.0, "f1": 0.9600000000000001, "nombre": "Relaciones íntimas y sociales"}, "d850": {"tp": 12, "fp": 1, "fn": 0, "soporte": 12, "precision": 0.9230769230769231, "recall": 1.0, "f1": 0.9600000000000001, "nombre": "Trabajo remunerado"}, "d920": {"tp": 27, "fp": 0, "fn": 0, "soporte": 27, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Tiempo libre y ocio"}, "e1101": {"tp": 21, "fp": 0, "fn": 0, "soporte": 21, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Medicamentos"}, "e310": {"tp": 10, "fp": 0, "fn": 5, "soporte": 15, "precision": 1.0, "recall": 0.6666666666666666, "f1": 0.8, "nombre": "Familiares cercanos"}, "e355": {"tp": 18, "fp": 4, "fn": 0, "soporte": 18, "precision": 0.8181818181818182, "recall": 1.0, "f1": 0.9, "nombre": "Profesionales de la salud"}, "e410": {"tp": 18, "fp": 0, "fn": 0, "soporte": 18, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Actitudes individuales de miembros de la familia cercana"}, "e570": {"tp": 12, "fp": 0, "fn": 0, "soporte": 12, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Servicios, sistemas y políticas de seguridad social"}}}, "ci_95": {"micro_f1": [0.9694415173867228, 0.9896049896049897], "macro_f1": [0.9563155454858041, 0.986721096096096], "weighted_f1": [0.9687904921934019, 0.9898454157782515]}}, {"modelo_id": "gemini_flash_35", "modelo_nombre": "Gemini Flash 3.5", "metricas": {"n_historias": 114, "n_clases": 24, "soporte_total": 465, "exact_matches_n": 100, "emr_pct": 87.71929824561403, "confusion_global": {"tp": 460, "fp": 12, "fn": 5}, "micro": {"precision": 0.9745762711864406, "recall": 0.989247311827957, "f1": 0.9818569903948772}, "macro": {"precision": 0.9693730697407169, "recall": 0.986904761904762, "f1": 0.9768430008506762}, "weighted": {"precision": 0.9765393303723475, "recall": 0.989247311827957, "f1": 0.9818984650826756}, "por_clase": {"b130": {"tp": 12, "fp": 0, "fn": 0, "soporte": 12, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Funciones relacionadas con la energía y los impulsos"}, "b134": {"tp": 15, "fp": 0, "fn": 0, "soporte": 15, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Funciones del sueño"}, "b147": {"tp": 9, "fp": 0, "fn": 0, "soporte": 9, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Funciones psicomotoras"}, "b152": {"tp": 15, "fp": 3, "fn": 0, "soporte": 15, "precision": 0.8333333333333334, "recall": 1.0, "f1": 0.9090909090909091, "nombre": "Funciones emocionales"}, "b1602": {"tp": 21, "fp": 0, "fn": 0, "soporte": 21, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Contenido del pensamiento"}, "b280": {"tp": 105, "fp": 0, "fn": 0, "soporte": 105, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Sensación de dolor"}, "b455": {"tp": 12, "fp": 0, "fn": 0, "soporte": 12, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Tolerancia al ejercicio físico"}, "b730": {"tp": 15, "fp": 0, "fn": 0, "soporte": 15, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Funciones relacionadas con la fuerza muscular"}, "b760": {"tp": 9, "fp": 1, "fn": 0, "soporte": 9, "precision": 0.9, "recall": 1.0, "f1": 0.9473684210526316, "nombre": "Control de los movimientos voluntarios"}, "d175": {"tp": 12, "fp": 0, "fn": 0, "soporte": 12, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Resolver problemas"}, "d230": {"tp": 15, "fp": 2, "fn": 0, "soporte": 15, "precision": 0.8823529411764706, "recall": 1.0, "f1": 0.9375, "nombre": "Llevar a cabo rutinas diarias"}, "d240": {"tp": 21, "fp": 0, "fn": 0, "soporte": 21, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Manejo del estrés y demandas psicológicas"}, "d430": {"tp": 15, "fp": 0, "fn": 0, "soporte": 15, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Levantar y llevar objetos"}, "d450": {"tp": 18, "fp": 0, "fn": 0, "soporte": 18, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Andar y desplazarse"}, "d640": {"tp": 15, "fp": 0, "fn": 0, "soporte": 15, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Realizar los quehaceres de la casa"}, "d760": {"tp": 20, "fp": 1, "fn": 1, "soporte": 21, "precision": 0.9523809523809523, "recall": 0.9523809523809523, "f1": 0.9523809523809523, "nombre": "Relaciones familiares"}, "d770": {"tp": 12, "fp": 1, "fn": 0, "soporte": 12, "precision": 0.9230769230769231, "recall": 1.0, "f1": 0.9600000000000001, "nombre": "Relaciones íntimas y sociales"}, "d850": {"tp": 12, "fp": 0, "fn": 0, "soporte": 12, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Trabajo remunerado"}, "d920": {"tp": 27, "fp": 0, "fn": 0, "soporte": 27, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Tiempo libre y ocio"}, "e1101": {"tp": 21, "fp": 0, "fn": 0, "soporte": 21, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Medicamentos"}, "e310": {"tp": 11, "fp": 1, "fn": 4, "soporte": 15, "precision": 0.9166666666666666, "recall": 0.7333333333333333, "f1": 0.8148148148148148, "nombre": "Familiares cercanos"}, "e355": {"tp": 18, "fp": 3, "fn": 0, "soporte": 18, "precision": 0.8571428571428571, "recall": 1.0, "f1": 0.923076923076923, "nombre": "Profesionales de la salud"}, "e410": {"tp": 18, "fp": 0, "fn": 0, "soporte": 18, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Actitudes individuales de miembros de la familia cercana"}, "e570": {"tp": 12, "fp": 0, "fn": 0, "soporte": 12, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Servicios, sistemas y políticas de seguridad social"}}}, "ci_95": {"micro_f1": [0.9723145071982282, 0.9905362776025235], "macro_f1": [0.9616291184305891, 0.9880356740397308], "weighted_f1": [0.972802290020305, 0.990723226049313]}}, {"modelo_id": "gemini_flash_37", "modelo_nombre": "Gemini Flash 3.7", "metricas": {"n_historias": 114, "n_clases": 24, "soporte_total": 465, "exact_matches_n": 102, "emr_pct": 89.47368421052632, "confusion_global": {"tp": 458, "fp": 7, "fn": 7}, "micro": {"precision": 0.9849462365591398, "recall": 0.9849462365591398, "f1": 0.9849462365591398}, "macro": {"precision": 0.9817738633915104, "recall": 0.9813492063492064, "f1": 0.9788981291761298}, "weighted": {"precision": 0.9867543841357884, "recall": 0.9849462365591398, "f1": 0.9837892586729184}, "por_clase": {"b130": {"tp": 12, "fp": 0, "fn": 0, "soporte": 12, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Funciones relacionadas con la energía y los impulsos"}, "b134": {"tp": 15, "fp": 0, "fn": 0, "soporte": 15, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Funciones del sueño"}, "b147": {"tp": 9, "fp": 0, "fn": 0, "soporte": 9, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Funciones psicomotoras"}, "b152": {"tp": 15, "fp": 2, "fn": 0, "soporte": 15, "precision": 0.8823529411764706, "recall": 1.0, "f1": 0.9375, "nombre": "Funciones emocionales"}, "b1602": {"tp": 21, "fp": 0, "fn": 0, "soporte": 21, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Contenido del pensamiento"}, "b280": {"tp": 105, "fp": 0, "fn": 0, "soporte": 105, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Sensación de dolor"}, "b455": {"tp": 12, "fp": 0, "fn": 0, "soporte": 12, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Tolerancia al ejercicio físico"}, "b730": {"tp": 15, "fp": 0, "fn": 0, "soporte": 15, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Funciones relacionadas con la fuerza muscular"}, "b760": {"tp": 9, "fp": 1, "fn": 0, "soporte": 9, "precision": 0.9, "recall": 1.0, "f1": 0.9473684210526316, "nombre": "Control de los movimientos voluntarios"}, "d175": {"tp": 12, "fp": 0, "fn": 0, "soporte": 12, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Resolver problemas"}, "d230": {"tp": 15, "fp": 0, "fn": 0, "soporte": 15, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Llevar a cabo rutinas diarias"}, "d240": {"tp": 21, "fp": 0, "fn": 0, "soporte": 21, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Manejo del estrés y demandas psicológicas"}, "d430": {"tp": 15, "fp": 0, "fn": 0, "soporte": 15, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Levantar y llevar objetos"}, "d450": {"tp": 18, "fp": 0, "fn": 0, "soporte": 18, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Andar y desplazarse"}, "d640": {"tp": 15, "fp": 0, "fn": 0, "soporte": 15, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Realizar los quehaceres de la casa"}, "d760": {"tp": 20, "fp": 0, "fn": 1, "soporte": 21, "precision": 1.0, "recall": 0.9523809523809523, "f1": 0.975609756097561, "nombre": "Relaciones familiares"}, "d770": {"tp": 12, "fp": 1, "fn": 0, "soporte": 12, "precision": 0.9230769230769231, "recall": 1.0, "f1": 0.9600000000000001, "nombre": "Relaciones íntimas y sociales"}, "d850": {"tp": 12, "fp": 0, "fn": 0, "soporte": 12, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Trabajo remunerado"}, "d920": {"tp": 27, "fp": 0, "fn": 0, "soporte": 27, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Tiempo libre y ocio"}, "e1101": {"tp": 21, "fp": 0, "fn": 0, "soporte": 21, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Medicamentos"}, "e310": {"tp": 9, "fp": 0, "fn": 6, "soporte": 15, "precision": 1.0, "recall": 0.6, "f1": 0.7499999999999999, "nombre": "Familiares cercanos"}, "e355": {"tp": 18, "fp": 3, "fn": 0, "soporte": 18, "precision": 0.8571428571428571, "recall": 1.0, "f1": 0.923076923076923, "nombre": "Profesionales de la salud"}, "e410": {"tp": 18, "fp": 0, "fn": 0, "soporte": 18, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Actitudes individuales de miembros de la familia cercana"}, "e570": {"tp": 12, "fp": 0, "fn": 0, "soporte": 12, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Servicios, sistemas y políticas de seguridad social"}}}, "ci_95": {"micro_f1": [0.9758241758241758, 0.9934065934065934], "macro_f1": [0.9641654215235776, 0.9898550724637681], "weighted_f1": [0.9729221185338797, 0.993087513237701]}}];
-        const HUMAN_DATA = {"flash_35": {"fiabilidad": {"n_historias": 21, "exact_iter_n": 11, "pae_pct": 52.38095238095239, "Po": 0.9814814814814814, "ac1": 0.9723661485319515, "alpha": 0.9438596491228067}, "desempeno": {"n": 21, "exact": 1, "emr": 4.761904761904762, "tp": 72, "fp": 25, "fn": 43, "soporte": 115, "micro": {"p": 0.7422680412371134, "r": 0.6260869565217392, "f1": 0.6792452830188681}, "macro": {"p": 0.5680555555555555, "r": 0.41884920634920636, "f1": 0.4580698304963011}, "weighted": {"p": 0.7766666666666666, "r": 0.6260869565217392, "f1": 0.6697281320554977}, "per_class": {"b130": {"tp": 2, "fp": 0, "fn": 2, "soporte": 4, "precision": 1.0, "recall": 0.5, "f1": 0.6666666666666666, "nombre": "Funciones relacionadas con la energía y los impulsos", "componente": "b"}, "b134": {"tp": 6, "fp": 0, "fn": 0, "soporte": 6, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Funciones del sueño", "componente": "b"}, "b147": {"tp": 0, "fp": 0, "fn": 0, "soporte": 0, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Funciones psicomotoras", "componente": "b"}, "b152": {"tp": 3, "fp": 0, "fn": 1, "soporte": 4, "precision": 1.0, "recall": 0.75, "f1": 0.8571428571428571, "nombre": "Funciones emocionales", "componente": "b"}, "b1602": {"tp": 3, "fp": 0, "fn": 3, "soporte": 6, "precision": 1.0, "recall": 0.5, "f1": 0.6666666666666666, "nombre": "Contenido del pensamiento", "componente": "b"}, "b280": {"tp": 21, "fp": 0, "fn": 0, "soporte": 21, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Sensación de dolor", "componente": "b"}, "b455": {"tp": 1, "fp": 2, "fn": 4, "soporte": 5, "precision": 0.3333333333333333, "recall": 0.2, "f1": 0.25, "nombre": "Tolerancia al ejercicio físico", "componente": "b"}, "b730": {"tp": 3, "fp": 1, "fn": 3, "soporte": 6, "precision": 0.75, "recall": 0.5, "f1": 0.6, "nombre": "Funciones relacionadas con la fuerza muscular", "componente": "b"}, "b760": {"tp": 0, "fp": 1, "fn": 1, "soporte": 1, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Control de los movimientos voluntarios", "componente": "b"}, "d175": {"tp": 1, "fp": 0, "fn": 2, "soporte": 3, "precision": 1.0, "recall": 0.3333333333333333, "f1": 0.5, "nombre": "Resolver problemas", "componente": "d"}, "d230": {"tp": 3, "fp": 2, "fn": 4, "soporte": 7, "precision": 0.6, "recall": 0.42857142857142855, "f1": 0.5, "nombre": "Llevar a cabo rutinas diarias", "componente": "d"}, "d240": {"tp": 1, "fp": 0, "fn": 2, "soporte": 3, "precision": 1.0, "recall": 0.3333333333333333, "f1": 0.5, "nombre": "Manejo del estrés y demandas psicológicas", "componente": "d"}, "d430": {"tp": 4, "fp": 1, "fn": 4, "soporte": 8, "precision": 0.8, "recall": 0.5, "f1": 0.6153846153846154, "nombre": "Levantar y llevar objetos", "componente": "d"}, "d450": {"tp": 0, "fp": 1, "fn": 4, "soporte": 4, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Andar y desplazarse", "componente": "d"}, "d640": {"tp": 2, "fp": 2, "fn": 2, "soporte": 4, "precision": 0.5, "recall": 0.5, "f1": 0.5, "nombre": "Realizar los quehaceres de la casa", "componente": "d"}, "d760": {"tp": 0, "fp": 1, "fn": 3, "soporte": 3, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Relaciones familiares", "componente": "d"}, "d770": {"tp": 0, "fp": 1, "fn": 0, "soporte": 0, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Relaciones íntimas y sociales", "componente": "d"}, "d850": {"tp": 6, "fp": 2, "fn": 1, "soporte": 7, "precision": 0.75, "recall": 0.8571428571428571, "f1": 0.7999999999999999, "nombre": "Trabajo remunerado", "componente": "d"}, "d920": {"tp": 6, "fp": 0, "fn": 2, "soporte": 8, "precision": 1.0, "recall": 0.75, "f1": 0.8571428571428571, "nombre": "Tiempo libre y ocio", "componente": "d"}, "e1101": {"tp": 7, "fp": 3, "fn": 0, "soporte": 7, "precision": 0.7, "recall": 1.0, "f1": 0.8235294117647058, "nombre": "Medicamentos", "componente": "e"}, "e310": {"tp": 0, "fp": 4, "fn": 0, "soporte": 0, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Familiares cercanos", "componente": "e"}, "e355": {"tp": 1, "fp": 4, "fn": 1, "soporte": 2, "precision": 0.2, "recall": 0.5, "f1": 0.28571428571428575, "nombre": "Profesionales de la salud", "componente": "e"}, "e410": {"tp": 0, "fp": 0, "fn": 1, "soporte": 1, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Actitudes individuales de miembros de la familia cercana", "componente": "e"}, "e570": {"tp": 2, "fp": 0, "fn": 3, "soporte": 5, "precision": 1.0, "recall": 0.4, "f1": 0.5714285714285715, "nombre": "Servicios, sistemas y políticas de seguridad social", "componente": "e"}}, "por_componente": {"b": {"tp": 39, "fp": 4, "fn": 14, "soporte": 53, "f1_list": [0.6666666666666666, 1.0, 0.0, 0.8571428571428571, 0.6666666666666666, 1.0, 0.25, 0.6, 0.0], "micro_precision": 0.9069767441860465, "micro_recall": 0.7358490566037735, "micro_f1": 0.8124999999999999, "macro_f1": 0.56005291005291}, "d": {"tp": 23, "fp": 10, "fn": 24, "soporte": 47, "f1_list": [0.5, 0.5, 0.5, 0.6153846153846154, 0.0, 0.5, 0.0, 0.0, 0.7999999999999999, 0.8571428571428571], "micro_precision": 0.696969696969697, "micro_recall": 0.48936170212765956, "micro_f1": 0.575, "macro_f1": 0.42725274725274726}, "e": {"tp": 10, "fp": 11, "fn": 5, "soporte": 15, "f1_list": [0.8235294117647058, 0.0, 0.28571428571428575, 0.0, 0.5714285714285715], "micro_precision": 0.47619047619047616, "micro_recall": 0.6666666666666666, "micro_f1": 0.5555555555555556, "macro_f1": 0.33613445378151263}}}, "ci_95": {"micro": [0.5981308411214952, 0.7639484978540773], "macro": [0.3371527777777778, 0.52367932992933], "weighted": [0.5613706336194375, 0.7677041726799647]}}, "flash_37": {"fiabilidad": {"n_historias": 21, "exact_iter_n": 12, "pae_pct": 57.14285714285714, "Po": 0.98015873015873, "ac1": 0.9707671684883479, "alpha": 0.9382406761937953}, "desempeno": {"n": 21, "exact": 2, "emr": 9.523809523809524, "tp": 74, "fp": 19, "fn": 41, "soporte": 115, "micro": {"p": 0.7956989247311828, "r": 0.6434782608695652, "f1": 0.7115384615384613}, "macro": {"p": 0.5903935185185185, "r": 0.4300099206349206, "f1": 0.46825501568148625}, "weighted": {"p": 0.7908212560386473, "r": 0.6434782608695652, "f1": 0.6799041154923509}, "per_class": {"b130": {"tp": 3, "fp": 0, "fn": 1, "soporte": 4, "precision": 1.0, "recall": 0.75, "f1": 0.8571428571428571, "nombre": "Funciones relacionadas con la energía y los impulsos", "componente": "b"}, "b134": {"tp": 6, "fp": 0, "fn": 0, "soporte": 6, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Funciones del sueño", "componente": "b"}, "b147": {"tp": 0, "fp": 0, "fn": 0, "soporte": 0, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Funciones psicomotoras", "componente": "b"}, "b152": {"tp": 3, "fp": 0, "fn": 1, "soporte": 4, "precision": 1.0, "recall": 0.75, "f1": 0.8571428571428571, "nombre": "Funciones emocionales", "componente": "b"}, "b1602": {"tp": 4, "fp": 0, "fn": 2, "soporte": 6, "precision": 1.0, "recall": 0.6666666666666666, "f1": 0.8, "nombre": "Contenido del pensamiento", "componente": "b"}, "b280": {"tp": 21, "fp": 0, "fn": 0, "soporte": 21, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Sensación de dolor", "componente": "b"}, "b455": {"tp": 1, "fp": 1, "fn": 4, "soporte": 5, "precision": 0.5, "recall": 0.2, "f1": 0.28571428571428575, "nombre": "Tolerancia al ejercicio físico", "componente": "b"}, "b730": {"tp": 2, "fp": 1, "fn": 4, "soporte": 6, "precision": 0.6666666666666666, "recall": 0.3333333333333333, "f1": 0.4444444444444444, "nombre": "Funciones relacionadas con la fuerza muscular", "componente": "b"}, "b760": {"tp": 0, "fp": 0, "fn": 1, "soporte": 1, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Control de los movimientos voluntarios", "componente": "b"}, "d175": {"tp": 1, "fp": 0, "fn": 2, "soporte": 3, "precision": 1.0, "recall": 0.3333333333333333, "f1": 0.5, "nombre": "Resolver problemas", "componente": "d"}, "d230": {"tp": 3, "fp": 2, "fn": 4, "soporte": 7, "precision": 0.6, "recall": 0.42857142857142855, "f1": 0.5, "nombre": "Llevar a cabo rutinas diarias", "componente": "d"}, "d240": {"tp": 1, "fp": 0, "fn": 2, "soporte": 3, "precision": 1.0, "recall": 0.3333333333333333, "f1": 0.5, "nombre": "Manejo del estrés y demandas psicológicas", "componente": "d"}, "d430": {"tp": 4, "fp": 1, "fn": 4, "soporte": 8, "precision": 0.8, "recall": 0.5, "f1": 0.6153846153846154, "nombre": "Levantar y llevar objetos", "componente": "d"}, "d450": {"tp": 0, "fp": 1, "fn": 4, "soporte": 4, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Andar y desplazarse", "componente": "d"}, "d640": {"tp": 1, "fp": 0, "fn": 3, "soporte": 4, "precision": 1.0, "recall": 0.25, "f1": 0.4, "nombre": "Realizar los quehaceres de la casa", "componente": "d"}, "d760": {"tp": 0, "fp": 0, "fn": 3, "soporte": 3, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Relaciones familiares", "componente": "d"}, "d770": {"tp": 0, "fp": 1, "fn": 0, "soporte": 0, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Relaciones íntimas y sociales", "componente": "d"}, "d850": {"tp": 7, "fp": 2, "fn": 0, "soporte": 7, "precision": 0.7777777777777778, "recall": 1.0, "f1": 0.8750000000000001, "nombre": "Trabajo remunerado", "componente": "d"}, "d920": {"tp": 7, "fp": 1, "fn": 1, "soporte": 8, "precision": 0.875, "recall": 0.875, "f1": 0.875, "nombre": "Tiempo libre y ocio", "componente": "d"}, "e1101": {"tp": 7, "fp": 3, "fn": 0, "soporte": 7, "precision": 0.7, "recall": 1.0, "f1": 0.8235294117647058, "nombre": "Medicamentos", "componente": "e"}, "e310": {"tp": 0, "fp": 3, "fn": 0, "soporte": 0, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Familiares cercanos", "componente": "e"}, "e355": {"tp": 1, "fp": 3, "fn": 1, "soporte": 2, "precision": 0.25, "recall": 0.5, "f1": 0.3333333333333333, "nombre": "Profesionales de la salud", "componente": "e"}, "e410": {"tp": 0, "fp": 0, "fn": 1, "soporte": 1, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Actitudes individuales de miembros de la familia cercana", "componente": "e"}, "e570": {"tp": 2, "fp": 0, "fn": 3, "soporte": 5, "precision": 1.0, "recall": 0.4, "f1": 0.5714285714285715, "nombre": "Servicios, sistemas y políticas de seguridad social", "componente": "e"}}, "por_componente": {"b": {"tp": 40, "fp": 2, "fn": 13, "soporte": 53, "f1_list": [0.8571428571428571, 1.0, 0.0, 0.8571428571428571, 0.8, 1.0, 0.28571428571428575, 0.4444444444444444, 0.0], "micro_precision": 0.9523809523809523, "micro_recall": 0.7547169811320755, "micro_f1": 0.8421052631578947, "macro_f1": 0.582716049382716}, "d": {"tp": 24, "fp": 8, "fn": 23, "soporte": 47, "f1_list": [0.5, 0.5, 0.5, 0.6153846153846154, 0.0, 0.4, 0.0, 0.0, 0.8750000000000001, 0.875], "micro_precision": 0.75, "micro_recall": 0.5106382978723404, "micro_f1": 0.6075949367088608, "macro_f1": 0.42653846153846153}, "e": {"tp": 10, "fp": 9, "fn": 5, "soporte": 15, "f1_list": [0.8235294117647058, 0.0, 0.3333333333333333, 0.0, 0.5714285714285715], "micro_precision": 0.5263157894736842, "micro_recall": 0.6666666666666666, "micro_f1": 0.5882352941176471, "macro_f1": 0.3456582633053221}}}, "ci_95": {"micro": [0.6368159203980099, 0.7916666666666666], "macro": [0.36165913335030986, 0.534342085383752], "weighted": [0.578896948964622, 0.7703030303030303]}}, "flash_36": {"fiabilidad": {"n_historias": 21, "exact_iter_n": 12, "pae_pct": 57.14285714285714, "Po": 0.98015873015873, "ac1": 0.9707671684883479, "alpha": 0.9382406761937953}, "desempeno": {"n": 21, "exact": 2, "emr": 9.523809523809524, "tp": 74, "fp": 19, "fn": 41, "soporte": 115, "micro": {"p": 0.7956989247311828, "r": 0.6434782608695652, "f1": 0.7115384615384613}, "macro": {"p": 0.5903935185185185, "r": 0.4300099206349206, "f1": 0.46825501568148625}, "weighted": {"p": 0.7908212560386473, "r": 0.6434782608695652, "f1": 0.6799041154923509}, "per_class": {"b130": {"tp": 3, "fp": 0, "fn": 1, "soporte": 4, "precision": 1.0, "recall": 0.75, "f1": 0.8571428571428571, "nombre": "Funciones relacionadas con la energía y los impulsos", "componente": "b"}, "b134": {"tp": 6, "fp": 0, "fn": 0, "soporte": 6, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Funciones del sueño", "componente": "b"}, "b147": {"tp": 0, "fp": 0, "fn": 0, "soporte": 0, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Funciones psicomotoras", "componente": "b"}, "b152": {"tp": 3, "fp": 0, "fn": 1, "soporte": 4, "precision": 1.0, "recall": 0.75, "f1": 0.8571428571428571, "nombre": "Funciones emocionales", "componente": "b"}, "b1602": {"tp": 4, "fp": 0, "fn": 2, "soporte": 6, "precision": 1.0, "recall": 0.6666666666666666, "f1": 0.8, "nombre": "Contenido del pensamiento", "componente": "b"}, "b280": {"tp": 21, "fp": 0, "fn": 0, "soporte": 21, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Sensación de dolor", "componente": "b"}, "b455": {"tp": 1, "fp": 1, "fn": 4, "soporte": 5, "precision": 0.5, "recall": 0.2, "f1": 0.28571428571428575, "nombre": "Tolerancia al ejercicio físico", "componente": "b"}, "b730": {"tp": 2, "fp": 1, "fn": 4, "soporte": 6, "precision": 0.6666666666666666, "recall": 0.3333333333333333, "f1": 0.4444444444444444, "nombre": "Funciones relacionadas con la fuerza muscular", "componente": "b"}, "b760": {"tp": 0, "fp": 0, "fn": 1, "soporte": 1, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Control de los movimientos voluntarios", "componente": "b"}, "d175": {"tp": 1, "fp": 0, "fn": 2, "soporte": 3, "precision": 1.0, "recall": 0.3333333333333333, "f1": 0.5, "nombre": "Resolver problemas", "componente": "d"}, "d230": {"tp": 3, "fp": 2, "fn": 4, "soporte": 7, "precision": 0.6, "recall": 0.42857142857142855, "f1": 0.5, "nombre": "Llevar a cabo rutinas diarias", "componente": "d"}, "d240": {"tp": 1, "fp": 0, "fn": 2, "soporte": 3, "precision": 1.0, "recall": 0.3333333333333333, "f1": 0.5, "nombre": "Manejo del estrés y demandas psicológicas", "componente": "d"}, "d430": {"tp": 4, "fp": 1, "fn": 4, "soporte": 8, "precision": 0.8, "recall": 0.5, "f1": 0.6153846153846154, "nombre": "Levantar y llevar objetos", "componente": "d"}, "d450": {"tp": 0, "fp": 1, "fn": 4, "soporte": 4, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Andar y desplazarse", "componente": "d"}, "d640": {"tp": 1, "fp": 0, "fn": 3, "soporte": 4, "precision": 1.0, "recall": 0.25, "f1": 0.4, "nombre": "Realizar los quehaceres de la casa", "componente": "d"}, "d760": {"tp": 0, "fp": 0, "fn": 3, "soporte": 3, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Relaciones familiares", "componente": "d"}, "d770": {"tp": 0, "fp": 1, "fn": 0, "soporte": 0, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Relaciones íntimas y sociales", "componente": "d"}, "d850": {"tp": 7, "fp": 2, "fn": 0, "soporte": 7, "precision": 0.7777777777777778, "recall": 1.0, "f1": 0.8750000000000001, "nombre": "Trabajo remunerado", "componente": "d"}, "d920": {"tp": 7, "fp": 1, "fn": 1, "soporte": 8, "precision": 0.875, "recall": 0.875, "f1": 0.875, "nombre": "Tiempo libre y ocio", "componente": "d"}, "e1101": {"tp": 7, "fp": 3, "fn": 0, "soporte": 7, "precision": 0.7, "recall": 1.0, "f1": 0.8235294117647058, "nombre": "Medicamentos", "componente": "e"}, "e310": {"tp": 0, "fp": 3, "fn": 0, "soporte": 0, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Familiares cercanos", "componente": "e"}, "e355": {"tp": 1, "fp": 3, "fn": 1, "soporte": 2, "precision": 0.25, "recall": 0.5, "f1": 0.3333333333333333, "nombre": "Profesionales de la salud", "componente": "e"}, "e410": {"tp": 0, "fp": 0, "fn": 1, "soporte": 1, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Actitudes individuales de miembros de la familia cercana", "componente": "e"}, "e570": {"tp": 2, "fp": 0, "fn": 3, "soporte": 5, "precision": 1.0, "recall": 0.4, "f1": 0.5714285714285715, "nombre": "Servicios, sistemas y políticas de seguridad social", "componente": "e"}}, "por_componente": {"b": {"tp": 40, "fp": 2, "fn": 13, "soporte": 53, "f1_list": [0.8571428571428571, 1.0, 0.0, 0.8571428571428571, 0.8, 1.0, 0.28571428571428575, 0.4444444444444444, 0.0], "micro_precision": 0.9523809523809523, "micro_recall": 0.7547169811320755, "micro_f1": 0.8421052631578947, "macro_f1": 0.582716049382716}, "d": {"tp": 24, "fp": 8, "fn": 23, "soporte": 47, "f1_list": [0.5, 0.5, 0.5, 0.6153846153846154, 0.0, 0.4, 0.0, 0.0, 0.8750000000000001, 0.875], "micro_precision": 0.75, "micro_recall": 0.5106382978723404, "micro_f1": 0.6075949367088608, "macro_f1": 0.42653846153846153}, "e": {"tp": 10, "fp": 9, "fn": 5, "soporte": 15, "f1_list": [0.8235294117647058, 0.0, 0.3333333333333333, 0.0, 0.5714285714285715], "micro_precision": 0.5263157894736842, "micro_recall": 0.6666666666666666, "micro_f1": 0.5882352941176471, "macro_f1": 0.3456582633053221}}}, "ci_95": {"micro": [0.6368159203980099, 0.7916666666666666], "macro": [0.36165913335030986, 0.534342085383752], "weighted": [0.578896948964622, 0.7703030303030303]}}, "gemma_31b": {"fiabilidad": {"n_historias": 21, "exact_iter_n": 13, "pae_pct": 61.904761904761905, "Po": 0.9841269841269839, "ac1": 0.975822989746357, "alpha": 0.9537858469156171}, "desempeno": {"n": 21, "exact": 4, "emr": 19.047619047619047, "tp": 85, "fp": 20, "fn": 30, "soporte": 115, "micro": {"p": 0.8095238095238095, "r": 0.7391304347826086, "f1": 0.7727272727272727}, "macro": {"p": 0.6556712962962963, "r": 0.5328869047619048, "f1": 0.5548126709891416}, "weighted": {"p": 0.8454589371980676, "r": 0.7391304347826086, "f1": 0.7616656872539226}, "per_class": {"b130": {"tp": 2, "fp": 0, "fn": 2, "soporte": 4, "precision": 1.0, "recall": 0.5, "f1": 0.6666666666666666, "nombre": "Funciones relacionadas con la energía y los impulsos", "componente": "b"}, "b134": {"tp": 6, "fp": 0, "fn": 0, "soporte": 6, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Funciones del sueño", "componente": "b"}, "b147": {"tp": 0, "fp": 0, "fn": 0, "soporte": 0, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Funciones psicomotoras", "componente": "b"}, "b152": {"tp": 3, "fp": 0, "fn": 1, "soporte": 4, "precision": 1.0, "recall": 0.75, "f1": 0.8571428571428571, "nombre": "Funciones emocionales", "componente": "b"}, "b1602": {"tp": 6, "fp": 0, "fn": 0, "soporte": 6, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Contenido del pensamiento", "componente": "b"}, "b280": {"tp": 21, "fp": 0, "fn": 0, "soporte": 21, "precision": 1.0, "recall": 1.0, "f1": 1.0, "nombre": "Sensación de dolor", "componente": "b"}, "b455": {"tp": 3, "fp": 1, "fn": 2, "soporte": 5, "precision": 0.75, "recall": 0.6, "f1": 0.6666666666666665, "nombre": "Tolerancia al ejercicio físico", "componente": "b"}, "b730": {"tp": 3, "fp": 2, "fn": 3, "soporte": 6, "precision": 0.6, "recall": 0.5, "f1": 0.5454545454545454, "nombre": "Funciones relacionadas con la fuerza muscular", "componente": "b"}, "b760": {"tp": 0, "fp": 0, "fn": 1, "soporte": 1, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Control de los movimientos voluntarios", "componente": "b"}, "d175": {"tp": 1, "fp": 0, "fn": 2, "soporte": 3, "precision": 1.0, "recall": 0.3333333333333333, "f1": 0.5, "nombre": "Resolver problemas", "componente": "d"}, "d230": {"tp": 5, "fp": 1, "fn": 2, "soporte": 7, "precision": 0.8333333333333334, "recall": 0.7142857142857143, "f1": 0.7692307692307692, "nombre": "Llevar a cabo rutinas diarias", "componente": "d"}, "d240": {"tp": 1, "fp": 0, "fn": 2, "soporte": 3, "precision": 1.0, "recall": 0.3333333333333333, "f1": 0.5, "nombre": "Manejo del estrés y demandas psicológicas", "componente": "d"}, "d430": {"tp": 4, "fp": 1, "fn": 4, "soporte": 8, "precision": 0.8, "recall": 0.5, "f1": 0.6153846153846154, "nombre": "Levantar y llevar objetos", "componente": "d"}, "d450": {"tp": 1, "fp": 0, "fn": 3, "soporte": 4, "precision": 1.0, "recall": 0.25, "f1": 0.4, "nombre": "Andar y desplazarse", "componente": "d"}, "d640": {"tp": 2, "fp": 2, "fn": 2, "soporte": 4, "precision": 0.5, "recall": 0.5, "f1": 0.5, "nombre": "Realizar los quehaceres de la casa", "componente": "d"}, "d760": {"tp": 1, "fp": 1, "fn": 2, "soporte": 3, "precision": 0.5, "recall": 0.3333333333333333, "f1": 0.4, "nombre": "Relaciones familiares", "componente": "d"}, "d770": {"tp": 0, "fp": 1, "fn": 0, "soporte": 0, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Relaciones íntimas y sociales", "componente": "d"}, "d850": {"tp": 7, "fp": 2, "fn": 0, "soporte": 7, "precision": 0.7777777777777778, "recall": 1.0, "f1": 0.8750000000000001, "nombre": "Trabajo remunerado", "componente": "d"}, "d920": {"tp": 7, "fp": 1, "fn": 1, "soporte": 8, "precision": 0.875, "recall": 0.875, "f1": 0.875, "nombre": "Tiempo libre y ocio", "componente": "d"}, "e1101": {"tp": 7, "fp": 3, "fn": 0, "soporte": 7, "precision": 0.7, "recall": 1.0, "f1": 0.8235294117647058, "nombre": "Medicamentos", "componente": "e"}, "e310": {"tp": 0, "fp": 2, "fn": 0, "soporte": 0, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Familiares cercanos", "componente": "e"}, "e355": {"tp": 2, "fp": 3, "fn": 0, "soporte": 2, "precision": 0.4, "recall": 1.0, "f1": 0.5714285714285715, "nombre": "Profesionales de la salud", "componente": "e"}, "e410": {"tp": 0, "fp": 0, "fn": 1, "soporte": 1, "precision": 0.0, "recall": 0.0, "f1": 0.0, "nombre": "Actitudes individuales de miembros de la familia cercana", "componente": "e"}, "e570": {"tp": 3, "fp": 0, "fn": 2, "soporte": 5, "precision": 1.0, "recall": 0.6, "f1": 0.7499999999999999, "nombre": "Servicios, sistemas y políticas de seguridad social", "componente": "e"}}, "por_componente": {"b": {"tp": 44, "fp": 3, "fn": 9, "soporte": 53, "f1_list": [0.6666666666666666, 1.0, 0.0, 0.8571428571428571, 1.0, 1.0, 0.6666666666666665, 0.5454545454545454, 0.0], "micro_precision": 0.9361702127659575, "micro_recall": 0.8301886792452831, "micro_f1": 0.88, "macro_f1": 0.6373256373256373}, "d": {"tp": 29, "fp": 9, "fn": 18, "soporte": 47, "f1_list": [0.5, 0.7692307692307692, 0.5, 0.6153846153846154, 0.4, 0.5, 0.4, 0.0, 0.8750000000000001, 0.875], "micro_precision": 0.7631578947368421, "micro_recall": 0.6170212765957447, "micro_f1": 0.6823529411764706, "macro_f1": 0.5434615384615384}, "e": {"tp": 12, "fp": 8, "fn": 3, "soporte": 15, "f1_list": [0.8235294117647058, 0.0, 0.5714285714285715, 0.0, 0.7499999999999999], "micro_precision": 0.6, "micro_recall": 0.8, "micro_f1": 0.6857142857142857, "macro_f1": 0.42899159663865544}}}, "ci_95": {"micro": [0.7078189300411523, 0.8461538461538461], "macro": [0.4409726776254909, 0.612346681096681], "weighted": [0.6763578135969027, 0.8395645139174551]}}};
-        const ABLATION_DATA = {"gemma_31b": {"nombre": "Gemma-4-31B-it", "completo": {"N_Codigos": 24, "Menciones_GT": 465, "Micro_F1": 0.9796791443850267, "Micro_Precision": 0.9744680851063829, "Micro_Recall": 0.9849462365591398, "Macro_F1": 0.9730513601650994, "Weighted_F1": 0.9793686750759286, "EMR": 0.868421052631579, "EMR_Aciertos": 99, "TP": 458, "FP": 12, "FN": 7}, "ablado": {"N_Codigos": 23, "Menciones_GT": 360, "Micro_F1": 0.9737931034482759, "Micro_Precision": 0.9671232876712329, "Micro_Recall": 0.9805555555555555, "Macro_F1": 0.9718796801722774, "Weighted_F1": 0.9733512053064078, "EMR": 0.868421052631579, "EMR_Aciertos": 99, "TP": 353, "FP": 12, "FN": 7}, "delta": {"Micro_F1": -0.005886040936750825, "Micro_Precision": -0.007344797435150041, "Micro_Recall": -0.004390681003584307, "Macro_F1": -0.0011716799928219723, "Weighted_F1": -0.006017469769520778, "EMR": 0.0}, "retencion": {"Micro_F1": 99.39918686944738, "Micro_Precision": 99.24627624573787, "Micro_Recall": 99.5542212518195, "Macro_F1": 99.87958703509513, "Weighted_F1": 99.38557665538423, "EMR": 100.0}}, "gemini_flash_35": {"nombre": "Gemini Flash 3.5", "completo": {"N_Codigos": 24, "Menciones_GT": 465, "Micro_F1": 0.9818569903948772, "Micro_Precision": 0.9745762711864406, "Micro_Recall": 0.989247311827957, "Macro_F1": 0.9768430008506762, "Weighted_F1": 0.9818984650826756, "EMR": 0.8771929824561403, "EMR_Aciertos": 100, "TP": 460, "FP": 12, "FN": 5}, "ablado": {"N_Codigos": 23, "Menciones_GT": 360, "Micro_F1": 0.9766162310866574, "Micro_Precision": 0.9673024523160763, "Micro_Recall": 0.9861111111111112, "Macro_F1": 0.9758361748007056, "Weighted_F1": 0.9766188507317893, "EMR": 0.8771929824561403, "EMR_Aciertos": 100, "TP": 355, "FP": 12, "FN": 5}, "delta": {"Micro_F1": -0.005240759308219767, "Micro_Precision": -0.007273818870364379, "Micro_Recall": -0.0031362007168458383, "Macro_F1": -0.0010068260499705994, "Weighted_F1": -0.005279614350886308, "EMR": 0.0}, "retencion": {"Micro_F1": 99.46624005741283, "Micro_Precision": 99.25364293330175, "Micro_Recall": 99.68297101449276, "Macro_F1": 99.8969306173977, "Weighted_F1": 99.46230546857593, "EMR": 100.0}}, "gemini_flash_37": {"nombre": "Gemini Flash 3.7", "completo": {"N_Codigos": 24, "Menciones_GT": 465, "Micro_F1": 0.9849462365591398, "Micro_Precision": 0.9849462365591398, "Micro_Recall": 0.9849462365591398, "Macro_F1": 0.9788981291761298, "Weighted_F1": 0.9837892586729184, "EMR": 0.8947368421052632, "EMR_Aciertos": 102, "TP": 458, "FP": 7, "FN": 7}, "ablado": {"N_Codigos": 23, "Menciones_GT": 360, "Micro_F1": 0.9805555555555555, "Micro_Precision": 0.9805555555555555, "Micro_Recall": 0.9805555555555555, "Macro_F1": 0.9779806565316137, "Weighted_F1": 0.9790611257858529, "EMR": 0.8947368421052632, "EMR_Aciertos": 102, "TP": 353, "FP": 7, "FN": 7}, "delta": {"Micro_F1": -0.004390681003584307, "Micro_Precision": -0.004390681003584307, "Micro_Recall": -0.004390681003584307, "Macro_F1": -0.0009174726445161374, "Weighted_F1": -0.004728132887065528, "EMR": 0.0}, "retencion": {"Micro_F1": 99.5542212518195, "Micro_Precision": 99.5542212518195, "Micro_Recall": 99.5542212518195, "Macro_F1": 99.90627496190146, "Weighted_F1": 99.51939576028269, "EMR": 100.0}}};
-        const CHAPTER_DATA = {"b": {"nombre": "Funciones Corporales (b)", "synth_f1": 99.3, "synth_p": 98.61, "synth_r": 100.0, "hum_f1": 84.21, "hum_p": 95.24, "hum_r": 75.47}, "d": {"nombre": "Actividades y Participación (d)", "synth_f1": 99.4, "synth_p": 99.4, "synth_r": 99.4, "hum_f1": 60.76, "hum_p": 75.0, "hum_r": 51.06}, "e": {"nombre": "Factores Ambientales (e)", "synth_f1": 94.55, "synth_p": 96.3, "synth_r": 92.86, "hum_f1": 58.82, "hum_p": 52.63, "hum_r": 66.67}};
-        const ICF_DESCRIPTIONS = {"b130": "Funciones de la energía y los impulsos", "b134": "Funciones del sueño", "b152": "Funciones emocionales", "b1801": "Sensación de dolor generalizado", "b280": "Sensación de dolor", "b28010": "Dolor en la cabeza y cuello", "b28011": "Dolor en el pecho", "b28013": "Dolor en la espalda", "b28014": "Dolor en las extremidades superiores", "b28015": "Dolor en las extremidades inferiores", "b455": "Funciones de tolerancia al ejercicio", "b710": "Funciones de movilidad articular", "b730": "Funciones relacionadas con la fuerza muscular", "b740": "Funciones relacionadas con la resistencia muscular", "d175": "Resolución de problemas", "d240": "Manejo del estrés y otras demandas psicológicas", "d410": "Cambiar las posturas corporales básicas", "d415": "Mantener una posición del cuerpo", "d430": "Levantar y llevar objetos", "d450": "Andar / Caminar", "d455": "Desplazarse por el entorno", "d770": "Relaciones interpersonales complejas", "d850": "Trabajo remunerado", "d920": "Tiempo libre y ocio", "e1101": "Medicamentos", "e310": "Familiares cercanos (apoyo social)", "e355": "Profesionales de la salud"};
-
-        let currentModel = 'flash_37';
+        const RESULTS = {"dataset_name": "Test Suite Run", "file_name": "test_codifier_output.json", "file_path": "/home/miguelvime/projects/2026-03-11_TFM/data/test_data/test_codifier_output.json", "n_cases": 12, "has_gt": true, "gt_key": "icf_codes", "pred_key": "predicted_icf_codes_consensus", "has_iterations": true, "pct_iter_agreement": 66.66666666666666, "total_codes_extracted": 46, "avg_codes_per_patient": 3.83, "top_codes": [["b280", 9], ["d850", 4], ["d430", 3], ["e1101", 3], ["e310", 3], ["e410", 3], ["d175", 3], ["d230", 3], ["b455", 3], ["b730", 3]], "chapter_counts": {"b": 21, "d": 13, "e": 12}, "eval_metrics": {"micro_f1": 94.51, "macro_f1": 95.05, "precision": 93.48, "recall": 95.56, "emr_pct": 66.67, "exact_matches": 8, "tp_total": 43, "fp_total": 3, "fn_total": 2, "chapter_f1": {"b": {"f1": 90.48, "p": 90.48, "r": 90.48}, "d": {"f1": 96.0, "p": 92.31, "r": 100.0}, "e": {"f1": 100.0, "p": 100.0, "r": 100.0}}}, "raw_data": [{"id_code_combination": "011", "id_clinical_text": "011_1", "clinical_text": "Varón de 45 años, operario de almacén, acude a revisión por dolor generalizado en la espalda y extremidades de evolución tórpida. En tto. con analgésicos pautados por su médico sin alivio significativo. Refiere importantes complicaciones para levantar cajas pesadas en el almacén, limitando su desempeño laboral diario. Exploración física muestra dolor generalizado a la palpación profunda en múltiples puntos, sin signos de radiculopatía aguda.", "icf_codes": ["b280", "d430", "e1101"], "predicted_icf_codes_consensus": ["b280", "d430", "d850", "e1101"], "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b280", "d430", "d850", "e1101"], "predicted_icf_it2": ["b280", "d430", "d850", "e1101"], "predicted_icf_it3": ["b280", "d430", "d850", "e1101"]}, {"id_code_combination": "011", "id_clinical_text": "011_2", "clinical_text": "Mujer de 52 años, empleada doméstica, consulta por mialgias difusas de varios meses de evolución. En tto. actual con medicación antinflamatoria diaria que apenas mitiga sus molestias. Manifiesta total incapacidad para levantar garrafas de agua o cubos en sus labores habituales. A la exploración se objetiva dolor generalizado a nivel cérvico-dorsal y lumbar, con hiperalgesia generalizada.", "icf_codes": ["b280", "d430", "e1101"], "predicted_icf_codes_consensus": ["b280", "d430", "e1101"], "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b280", "d430", "e1101"], "predicted_icf_it2": ["b280", "d430", "e1101"], "predicted_icf_it3": ["b280", "d430", "e1101"]}, {"id_code_combination": "011", "id_clinical_text": "011_3", "clinical_text": "Varón de 38 años, mecánico automotriz, acude refiriendo dolor difuso por todo el cuerpo que se intensifica al final de la jornada. En tto. con fármacos neuromoduladores prescritos en unidad del dolor. Presenta dificultad severa al levantar herramientas pesadas o piezas de motor en el taller. Exploración física con dolor generalizado al tacto superficial y percusión en cintura escapular y pélvica.", "icf_codes": ["b280", "d430", "e1101"], "predicted_icf_codes_consensus": ["b280", "d430", "e1101"], "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b280", "d430", "e1101"], "predicted_icf_it2": ["b280", "d430", "e1101"], "predicted_icf_it3": ["b280", "d430", "e1101"]}, {"id_code_combination": "012", "id_clinical_text": "012_1", "clinical_text": "Mujer de 48 años, ama de casa, acude a consulta derivada por su médico de cabecera por dolor generalizado en todo el cuerpo de más de tres años de evolución, de predominio matutino y sin respuesta analgésica previa. Durante la anamnesis destaca la situación conflictiva con su esposo, quien manifiesta abiertamente una actitud de escepticismo, sosteniendo la creencia de que exagera los síntomas para evitar las obligaciones domésticas. Exploración física: puntos dolorosos a la presión digital ampliamente distribuidos por la musculatura axial y extremidades, sin signos inflamatorios articulares.", "icf_codes": ["b280", "e310", "e410"], "predicted_icf_codes_consensus": ["b280", "e310", "e410"], "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b280", "e310", "e410"], "predicted_icf_it2": ["b280", "e310", "e410"], "predicted_icf_it3": ["b280", "e310", "e410"]}, {"id_code_combination": "012", "id_clinical_text": "012_2", "clinical_text": "Varón de 62 años, jubilado de la construcción, que consulta por mialgias generalizadas de intensidad severa que le acompañan desde hace un lustro, impidiéndole el descanso nocturno adecuado. El paciente acude acompañado por su hijo mayor, el cual muestra una actitud de sobreprotección familiar constante, intentando responder por él a las preguntas del médico y limitando cualquier movimiento activo del paciente por miedo a que empeore el cuadro álgico. A la exploración se objetiva hiperalgesia generalizada al tacto superficial en tronco y raíz de extremidades.", "icf_codes": ["b280", "e310", "e410"], "predicted_icf_codes_consensus": ["b134", "b280", "e310", "e410"], "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b134", "b280", "e310", "e410"], "predicted_icf_it2": ["b134", "b280", "e310", "e410"], "predicted_icf_it3": ["b134", "b280", "e310", "e410"]}, {"id_code_combination": "012", "id_clinical_text": "012_3", "clinical_text": "Mujer de 35 años, dependienta de comercio en situación de baja laboral, referida por dolor crónico difuso que afecta a la totalidad de la anatomía desde un accidente leve de tráfico ocurrido hace dieciocho meses. En la entrevista resalta la influencia de su madre, con quien convive y cuya actitud de constante preocupación y focalización en la enfermedad parece potenciar la conducta de evitación y el malestar general de la paciente. Exploración: palpación dolorosa generalizada en inserciones tendinosas y vientres musculares sin focalidad neurológica periférica.", "icf_codes": ["b280", "e310", "e410"], "predicted_icf_codes_consensus": ["b280", "e310", "e410"], "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b280", "e310", "e410"], "predicted_icf_it2": ["b280", "d850", "e310", "e410"], "predicted_icf_it3": ["b280", "d850", "e310", "e410"]}, {"id_code_combination": "013", "id_clinical_text": "013_1", "clinical_text": "Varón de 44 años, analista de sistemas, acude por dolor generalizado en extremidades y tronco de 8 meses de evolución. Refiere estrés intenso por plazos en su empleo, lo que agrava su cuadro. Manifiesta bloqueo mental para resolver problemas complejos de programación. Presenta incapacidad para llevar a cabo rutinas diarias básicas como cocinar o planificar la semana. Actualmente se encuentra de baja por trabajo remunerado en su empresa informática.", "icf_codes": ["b240", "b280", "d175", "d230", "d850"], "predicted_icf_codes_consensus": ["b280", "d175", "d230", "d850"], "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b280", "d175", "d230", "d240", "d850"], "predicted_icf_it2": ["b280", "d175", "d230", "d240", "d850"], "predicted_icf_it3": ["b280", "d175", "d230", "d850"]}, {"id_code_combination": "013", "id_clinical_text": "013_2", "clinical_text": "Mujer de 51 años, supervisora de call center, consulta por mialgias generalizadas y fatiga crónica. Refiere ansiedad ante demandas psicológicas de su puesto y llamadas conflictivas. Muestra dificultad para resolver problemas cotidianos de gestión de equipo debido al agotamiento. Acusa una fuerte alteración de rutinas diarias en el hogar y gran dificultad para desempeñar su trabajo remunerado a jornada completa.", "icf_codes": ["b240", "b280", "d175", "d230", "d850"], "predicted_icf_codes_consensus": ["b152", "b280", "d175", "d230", "d850"], "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b152", "b280", "b455", "d175", "d230", "d240", "d850"], "predicted_icf_it2": ["b130", "b152", "b280", "d175", "d230", "d240", "d850"], "predicted_icf_it3": ["b152", "b280", "b455", "d175", "d230", "d850"]}, {"id_code_combination": "013", "id_clinical_text": "013_3", "clinical_text": "Varón de 39 años, transportista autónomo, presenta dolor corporal difuso de predominio axial y en cinturas escapular y pélvica. Explica que le cuesta mucho superar el estrés laboral diario derivado del tráfico y la carga de mercancías. Manifiesta incapacidad para resolver problemas logísticos imprevistos en ruta. Esto provoca una grave alteración en rutinas diarias de descanso y alimentación, poniendo en riesgo la continuidad de su puesto de trabajo remunerado.", "icf_codes": ["b240", "b280", "d175", "d230", "d850"], "predicted_icf_codes_consensus": ["b240", "b280", "d175", "d230", "d850"], "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b240", "b280", "d175", "d230", "d850"], "predicted_icf_it2": ["b240", "b280", "d175", "d230", "d850"], "predicted_icf_it3": ["b240", "b280", "d175", "d230", "d850"]}, {"id_code_combination": "014", "id_clinical_text": "014_1", "clinical_text": "Varón de 48 años, administrativo. Acude a consulta por dolor crónico generalizado. Refiere una marcada fatiga y poca tolerancia al esfuerzo físico al intentar caminar tramos cortos. A la exploración destaca debilidad generalizada, refiriendo pérdida de fuerza en las piernas al levantarse de una silla, además de cierta torpeza y falta de coordinación en los miembros superiores al manipular objetos. Comenta que acude semanalmente al fisioterapeuta de su centro de salud para recibir pautas de movilización.", "icf_codes": ["b455", "b730", "b760", "e355"], "predicted_icf_codes_consensus": ["b455", "b730", "b760", "e355"], "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b455", "b730", "b760", "e355"], "predicted_icf_it2": ["b455", "b730", "b760", "e355"], "predicted_icf_it3": ["b280", "b455", "b730", "b760", "e355"]}, {"id_code_combination": "014", "id_clinical_text": "014_2", "clinical_text": "Mujer de 55 años, dependienta de comercio. Consulta por cuadro de dolor generalizado de meses de evolución. En la anamnesis destaca una fatiga muscular precoz al realizar actividades cotidianas que exigen mínima condición aeróbica. Se objetiva debilidad franca en extremidades, así como fallos en el control motor fino y grueso, traduciéndose en falta de precisión al asir objetos. Sigue seguimiento estrecho por el equipo médico rehabilitador y terapeutas de la unidad del dolor.", "icf_codes": ["b455", "b730", "b760", "e355"], "predicted_icf_codes_consensus": ["b455", "b730", "b760", "e355"], "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b455", "b730", "b760", "e355"], "predicted_icf_it2": ["b455", "b730", "b760", "e355"], "predicted_icf_it3": ["b455", "b730", "b760", "e355"]}, {"id_code_combination": "014", "id_clinical_text": "014_3", "clinical_text": "Varón de 62 años, operario de fábrica jubilado. Presenta dolor generalizado con afectación funcional severa. Manifiesta baja tolerancia al ejercicio, agotándose ante mínimos apremios físicos. La exploración física muestra disminución de fuerza muscular global en extremidades inferiores y mala coordinación en los movimientos voluntarios al intentar maniobras de precisión. Se coordina plan de actuación junto al médico rehabilitador para reevaluar su capacidad funcional.", "icf_codes": ["b455", "b730", "b760", "e355"], "predicted_icf_codes_consensus": ["b455", "b730", "b760", "e355"], "consensus_criteria": "strict 3/3", "predicted_icf_it1": ["b455", "b730", "b760", "e355"], "predicted_icf_it2": ["b455", "b730", "b760", "e355"], "predicted_icf_it3": ["b455", "b730", "b760", "e355"]}]};
+        const ICF_DESCRIPTIONS = {"b130": "Funciones de la energía y los impulsos", "b134": "Funciones del sueño", "b147": "Funciones psicomotoras", "b152": "Funciones emocionales", "b1602": "Contenido del pensamiento", "b1801": "Sensación de dolor generalizado", "b280": "Sensación de dolor", "b28010": "Dolor en la cabeza y cuello", "b28011": "Dolor en el pecho", "b28013": "Dolor en la espalda", "b28014": "Dolor en extremidades superiores", "b28015": "Dolor en extremidades inferiores", "b455": "Tolerancia al ejercicio físico", "b710": "Movilidad articular", "b730": "Fuerza muscular", "b740": "Resistencia muscular", "b760": "Control de movimientos voluntarios", "d175": "Resolver problemas", "d230": "Llevar a cabo rutinas diarias", "d240": "Manejo del estrés y demandas psicológicas", "d410": "Cambiar posturas corporales básicas", "d415": "Mantener posición del cuerpo", "d430": "Levantar y llevar objetos", "d450": "Andar y desplazarse", "d455": "Desplazarse por el entorno", "d640": "Quehaceres de la casa", "d760": "Relaciones familiares", "d770": "Relaciones interpersonales complejas", "d850": "Trabajo remunerado", "d920": "Tiempo libre y ocio", "e1101": "Medicamentos", "e310": "Familiares cercanos (apoyo social)", "e355": "Profesionales de la salud", "e410": "Actitudes de familiares", "e570": "Servicios de seguridad social"};
         let selectedCaseIndex = 0;
-        let chartModelsInstance = null;
         let chartChaptersInstance = null;
+        let chartTopCodesInstance = null;
 
         function switchTab(tabId) {
-            ['metrics', 'cases'].forEach(t => {
+            ['overview', 'cases'].forEach(t => {
                 document.getElementById('tab-' + t).classList.add('hidden');
                 document.getElementById('tab-btn-' + t).className = 'px-4 py-2 text-xs font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition';
             });
             document.getElementById('tab-' + tabId).classList.remove('hidden');
             document.getElementById('tab-btn-' + tabId).className = 'px-4 py-2 text-xs font-semibold border-b-2 border-indigo-500 text-indigo-400 transition';
             
-            if (tabId === 'metrics') {
+            if (tabId === 'overview') {
                 setTimeout(renderCharts, 50);
             }
         }
 
-        function changeModel(modelKey) {
-            currentModel = modelKey;
-            
-            document.querySelectorAll('.model-btn').forEach(btn => {
-                if (btn.getAttribute('data-model') === modelKey) {
-                    btn.className = 'model-btn px-3 py-1 text-xs font-medium rounded-lg bg-indigo-600 text-white border border-indigo-500 transition';
-                } else {
-                    btn.className = 'model-btn px-3 py-1 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition';
-                }
-            });
-
-            const titles = {
-                'flash_37': 'Google Gemini Flash 3.7',
-                'flash_35': 'Google Gemini Flash 3.5',
-                'gemma_31b': 'Gemma-4-31B-it'
-            };
-            document.getElementById('selected-model-title').innerText = titles[modelKey];
-
-            updateKPIs();
-            renderCasesList();
-            showCaseDetail(selectedCaseIndex);
-        }
-
-        function updateKPIs() {
-            const synthModelMap = {
-                'flash_37': 'gemini_flash_37',
-                'flash_35': 'gemini_flash_35',
-                'gemma_31b': 'gemma_31b'
-            };
-            const synthObj = F1_DATA.find(x => x.modelo_id === synthModelMap[currentModel]);
-            const humObj = HUMAN_DATA[currentModel];
-
-            if (synthObj && synthObj.metricas) {
-                const m = synthObj.metricas;
-                document.getElementById('synth-f1').innerText = (m.micro.f1 * 100).toFixed(2) + '%';
-                document.getElementById('synth-emr').innerText = m.emr_pct.toFixed(1) + '%';
-                document.getElementById('synth-prec').innerText = (m.micro.precision * 100).toFixed(2) + '%';
-                document.getElementById('synth-rec').innerText = (m.micro.recall * 100).toFixed(2) + '%';
-                document.getElementById('synth-sample-count').innerText = `N = ${m.n_historias || 101} historias`;
-                document.getElementById('synth-ac1').innerText = currentModel === 'flash_37' ? '1.0000' : '0.9994';
-            }
-
-            if (humObj && humObj.desempeno) {
-                const d = humObj.desempeno;
-                const f = humObj.fiabilidad || {};
-                document.getElementById('hum-f1').innerText = (d.micro.f1 * 100).toFixed(2) + '%';
-                document.getElementById('hum-emr').innerText = (d.emr || 0).toFixed(1) + '%';
-                document.getElementById('hum-prec').innerText = (d.micro.p * 100).toFixed(2) + '%';
-                document.getElementById('hum-rec').innerText = (d.micro.r * 100).toFixed(2) + '%';
-                document.getElementById('hum-ac1').innerText = (f.ac1 || 0).toFixed(4);
-                document.getElementById('hum-alpha').innerText = (f.alpha || 0).toFixed(3);
-                document.getElementById('hum-sample-count').innerText = `N = ${d.n || 21} historias`;
-            }
-        }
-
         function renderCharts() {
-            const s36 = (F1_DATA.find(x => x.modelo_id === 'gemini_flash_37')?.metricas?.micro?.f1 || 0.9709) * 100;
-            const s35 = (F1_DATA.find(x => x.modelo_id === 'gemini_flash_35')?.metricas?.micro?.f1 || 0.9720) * 100;
-            const sGemma = (F1_DATA.find(x => x.modelo_id === 'gemma_31b')?.metricas?.micro?.f1 || 0.9688) * 100;
-
-            const h36 = (HUMAN_DATA.flash_37?.desempeno?.micro?.f1 || 0.8222) * 100;
-            const h35 = (HUMAN_DATA.flash_35?.desempeno?.micro?.f1 || 0.8113) * 100;
-            const hGemma = (HUMAN_DATA.gemma_31b?.desempeno?.micro?.f1 || 0.7720) * 100;
-
-            const ctx1 = document.getElementById('chartModels').getContext('2d');
-            if (chartModelsInstance) chartModelsInstance.destroy();
-            chartModelsInstance = new Chart(ctx1, {
-                type: 'bar',
-                data: {
-                    labels: ['Gemini Flash 3.7', 'Gemini Flash 3.5', 'Gemma-4-31B-it'],
-                    datasets: [
-                        {
-                            label: 'Corpus Sintético',
-                            data: [s36.toFixed(2), s35.toFixed(2), sGemma.toFixed(2)],
-                            backgroundColor: 'rgba(99, 102, 241, 0.85)',
-                            borderColor: '#6366f1',
-                            borderRadius: 4
-                        },
-                        {
-                            label: 'Corpus Humano Real',
-                            data: [h36.toFixed(2), h35.toFixed(2), hGemma.toFixed(2)],
-                            backgroundColor: 'rgba(16, 185, 129, 0.85)',
-                            borderColor: '#10b981',
-                            borderRadius: 4
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: { min: 60, max: 100, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
-                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
-                    },
-                    plugins: {
-                        legend: { labels: { color: '#cbd5e1', font: { size: 11 } } }
-                    }
-                }
-            });
-
-            const ctx2 = document.getElementById('chartChapters').getContext('2d');
+            // CHART 1: Chapters
+            const ctx1 = document.getElementById('chartChapters').getContext('2d');
             if (chartChaptersInstance) chartChaptersInstance.destroy();
-            chartChaptersInstance = new Chart(ctx2, {
+
+            const chData = RESULTS.has_gt 
+                ? [RESULTS.eval_metrics.chapter_f1.b.f1, RESULTS.eval_metrics.chapter_f1.d.f1, RESULTS.eval_metrics.chapter_f1.e.f1]
+                : [RESULTS.chapter_counts.b, RESULTS.chapter_counts.d, RESULTS.chapter_counts.e];
+
+            const labelTitle = RESULTS.has_gt ? 'F1-Score por Capítulo (%)' : 'Total Menciones Asignadas';
+
+            chartChaptersInstance = new Chart(ctx1, {
                 type: 'bar',
                 data: {
-                    labels: ['Funciones (b)', 'Actividades (d)', 'Factores Amb. (e)'],
-                    datasets: [
-                        {
-                            label: 'F1 Sintético (%)',
-                            data: [CHAPTER_DATA.b.synth_f1, CHAPTER_DATA.d.synth_f1, CHAPTER_DATA.e.synth_f1],
-                            backgroundColor: 'rgba(99, 102, 241, 0.7)',
-                            borderColor: '#6366f1',
-                            borderRadius: 4
-                        },
-                        {
-                            label: 'F1 Humano Real (%)',
-                            data: [CHAPTER_DATA.b.hum_f1, CHAPTER_DATA.d.hum_f1, CHAPTER_DATA.e.hum_f1],
-                            backgroundColor: 'rgba(16, 185, 129, 0.8)',
-                            borderColor: '#10b981',
-                            borderRadius: 4
-                        }
-                    ]
+                    labels: ['Funciones Corporales (b)', 'Actividades / Part. (d)', 'Factores Amb. (e)'],
+                    datasets: [{
+                        label: labelTitle,
+                        data: chData,
+                        backgroundColor: ['rgba(99, 102, 241, 0.85)', 'rgba(16, 185, 129, 0.85)', 'rgba(245, 158, 11, 0.85)'],
+                        borderRadius: 4
+                    }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        y: { min: 50, max: 100, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
                         x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
                     },
-                    plugins: {
-                        legend: { labels: { color: '#cbd5e1', font: { size: 11 } } }
-                    }
+                    plugins: { legend: { display: false } }
                 }
             });
-        }
 
-        function renderTable() {
-            const tbody = document.getElementById('metrics-table-body');
-            tbody.innerHTML = '';
+            // CHART 2: Top Codes
+            const ctx2 = document.getElementById('chartTopCodes').getContext('2d');
+            if (chartTopCodesInstance) chartTopCodesInstance.destroy();
 
-            const rows = [
-                {
-                    corpus: 'Sintético (N=101)',
-                    modelo: 'Gemini Flash 3.7',
-                    micro_f1: (F1_DATA.find(x => x.modelo_id === 'gemini_flash_37')?.metricas?.micro?.f1 || 0.9709) * 100,
-                    macro_f1: (F1_DATA.find(x => x.modelo_id === 'gemini_flash_37')?.metricas?.macro?.f1 || 0.8650) * 100,
-                    emr: F1_DATA.find(x => x.modelo_id === 'gemini_flash_37')?.metricas?.emr_pct || 100.0,
-                    p: (F1_DATA.find(x => x.modelo_id === 'gemini_flash_37')?.metricas?.micro?.precision || 0.9740) * 100,
-                    r: (F1_DATA.find(x => x.modelo_id === 'gemini_flash_37')?.metricas?.micro?.recall || 0.9677) * 100,
-                    ac1: '1.0000'
+            const topLabels = RESULTS.top_codes.map(x => x[0]);
+            const topCounts = RESULTS.top_codes.map(x => x[1]);
+
+            chartTopCodesInstance = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: topLabels,
+                    datasets: [{
+                        label: 'Frecuencia de Aparición',
+                        data: topCounts,
+                        backgroundColor: 'rgba(99, 102, 241, 0.75)',
+                        borderColor: '#6366f1',
+                        borderRadius: 4
+                    }]
                 },
-                {
-                    corpus: 'Sintético (N=101)',
-                    modelo: 'Gemini Flash 3.5',
-                    micro_f1: (F1_DATA.find(x => x.modelo_id === 'gemini_flash_35')?.metricas?.micro?.f1 || 0.9720) * 100,
-                    macro_f1: (F1_DATA.find(x => x.modelo_id === 'gemini_flash_35')?.metricas?.macro?.f1 || 0.8670) * 100,
-                    emr: F1_DATA.find(x => x.modelo_id === 'gemini_flash_35')?.metricas?.emr_pct || 98.25,
-                    p: (F1_DATA.find(x => x.modelo_id === 'gemini_flash_35')?.metricas?.micro?.precision || 0.9741) * 100,
-                    r: (F1_DATA.find(x => x.modelo_id === 'gemini_flash_35')?.metricas?.micro?.recall || 0.9699) * 100,
-                    ac1: '0.9994'
-                },
-                {
-                    corpus: 'Sintético (N=101)',
-                    modelo: 'Gemma-4-31B-it',
-                    micro_f1: (F1_DATA.find(x => x.modelo_id === 'gemma_31b')?.metricas?.micro?.f1 || 0.9688) * 100,
-                    macro_f1: (F1_DATA.find(x => x.modelo_id === 'gemma_31b')?.metricas?.macro?.f1 || 0.8621) * 100,
-                    emr: F1_DATA.find(x => x.modelo_id === 'gemma_31b')?.metricas?.emr_pct || 98.25,
-                    p: (F1_DATA.find(x => x.modelo_id === 'gemma_31b')?.metricas?.micro?.precision || 0.9698) * 100,
-                    r: (F1_DATA.find(x => x.modelo_id === 'gemma_31b')?.metricas?.micro?.recall || 0.9677) * 100,
-                    ac1: '0.9994'
-                },
-                {
-                    corpus: 'Humano Real (N=21)',
-                    modelo: 'Gemini Flash 3.7',
-                    micro_f1: (HUMAN_DATA.flash_37?.desempeno?.micro?.f1 || 0.8222) * 100,
-                    macro_f1: (HUMAN_DATA.flash_37?.desempeno?.macro?.f1 || 0.5640) * 100,
-                    emr: HUMAN_DATA.flash_37?.desempeno?.emr || 42.86,
-                    p: (HUMAN_DATA.flash_37?.desempeno?.micro?.p || 0.8222) * 100,
-                    r: (HUMAN_DATA.flash_37?.desempeno?.micro?.r || 0.8222) * 100,
-                    ac1: (HUMAN_DATA.flash_37?.fiabilidad?.ac1 || 0.9856).toFixed(4)
-                },
-                {
-                    corpus: 'Humano Real (N=21)',
-                    modelo: 'Gemini Flash 3.5',
-                    micro_f1: (HUMAN_DATA.flash_35?.desempeno?.micro?.f1 || 0.8113) * 100,
-                    macro_f1: (HUMAN_DATA.flash_35?.desempeno?.macro?.f1 || 0.5421) * 100,
-                    emr: HUMAN_DATA.flash_35?.desempeno?.emr || 38.10,
-                    p: (HUMAN_DATA.flash_35?.desempeno?.micro?.p || 0.9149) * 100,
-                    r: (HUMAN_DATA.flash_35?.desempeno?.micro?.r || 0.7288) * 100,
-                    ac1: (HUMAN_DATA.flash_35?.fiabilidad?.ac1 || 0.9802).toFixed(4)
-                },
-                {
-                    corpus: 'Humano Real (N=21)',
-                    modelo: 'Gemma-4-31B-it',
-                    micro_f1: (HUMAN_DATA.gemma_31b?.desempeno?.micro?.f1 || 0.7720) * 100,
-                    macro_f1: (HUMAN_DATA.gemma_31b?.desempeno?.macro?.f1 || 0.5130) * 100,
-                    emr: HUMAN_DATA.gemma_31b?.desempeno?.emr || 28.57,
-                    p: (HUMAN_DATA.gemma_31b?.desempeno?.micro?.p || 0.9250) * 100,
-                    r: (HUMAN_DATA.gemma_31b?.desempeno?.micro?.r || 0.6630) * 100,
-                    ac1: (HUMAN_DATA.gemma_31b?.fiabilidad?.ac1 || 0.9780).toFixed(4)
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                    },
+                    plugins: { legend: { display: false } }
                 }
-            ];
-
-            rows.forEach(r => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="py-2 px-3 font-medium text-slate-200">${r.corpus}</td>
-                    <td class="py-2 px-3">${r.modelo}</td>
-                    <td class="py-2 px-3 text-right font-bold text-white">${r.micro_f1.toFixed(2)}%</td>
-                    <td class="py-2 px-3 text-right">${r.macro_f1.toFixed(2)}%</td>
-                    <td class="py-2 px-3 text-right">${r.emr.toFixed(1)}%</td>
-                    <td class="py-2 px-3 text-right">${r.p.toFixed(2)}%</td>
-                    <td class="py-2 px-3 text-right">${r.r.toFixed(2)}%</td>
-                    <td class="py-2 px-3 text-right text-slate-400">${r.ac1}</td>
-                `;
-                tbody.appendChild(tr);
             });
         }
 
         function renderCasesList() {
             const container = document.getElementById('case-list-container');
             container.innerHTML = '';
-            document.getElementById('case-badge-total').innerText = `${CASES_DATA.length} Casos`;
 
-            CASES_DATA.forEach((c, idx) => {
-                const gt = c.icf_codes || [];
-                const pred = c.predicted_icf_codes_consensus || [];
-                const isExact = gt.length === pred.length && gt.every(code => pred.includes(code));
+            RESULTS.raw_data.forEach((c, idx) => {
+                const gt = RESULTS.has_gt ? (c[RESULTS.gt_key] || []) : [];
+                const pred = c[RESULTS.pred_key] || [];
+                const isExact = RESULTS.has_gt ? (gt.length === pred.length && gt.every(code => pred.includes(code))) : true;
                 
                 const btn = document.createElement('button');
                 btn.className = `w-full text-left p-2.5 rounded-lg border transition flex items-center justify-between ${
@@ -532,14 +291,14 @@
                 btn.innerHTML = `
                     <div>
                         <div class="text-xs font-bold">Caso #${c.id_clinical_text || (idx+1)}</div>
-                        <div class="text-[11px] text-slate-400 truncate w-44 mt-0.5">${c.clinical_text.substring(0, 45)}...</div>
+                        <div class="text-[11px] text-slate-400 truncate w-44 mt-0.5">${(c.clinical_text || '').substring(0, 45)}...</div>
                     </div>
                     <span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                        isExact 
-                            ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' 
-                            : 'bg-amber-950 text-amber-400 border border-amber-800'
+                        RESULTS.has_gt 
+                            ? (isExact ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-amber-950 text-amber-400 border border-amber-800')
+                            : 'bg-indigo-950 text-indigo-300 border border-indigo-800'
                     }">
-                        ${isExact ? 'Exacto' : 'Discrep.'}
+                        ${RESULTS.has_gt ? (isExact ? 'Exacto' : 'Discrep.') : `${pred.length} Códigos`}
                     </span>
                 `;
                 container.appendChild(btn);
@@ -550,77 +309,80 @@
             selectedCaseIndex = idx;
             renderCasesList();
 
-            const c = CASES_DATA[idx];
+            const c = RESULTS.raw_data[idx];
             if (!c) return;
 
             document.getElementById('detail-case-badge').innerText = `Caso #${c.id_clinical_text || (idx+1)}`;
-            document.getElementById('detail-case-author').innerText = `Combo ID: ${c.id_code_combination || '--'}`;
-            document.getElementById('detail-clinical-text').innerText = `“${c.clinical_text}”`;
+            document.getElementById('detail-clinical-text').innerText = `“${c.clinical_text || 'Sin texto registrado'}”`;
 
-            const gt = c.icf_codes || [];
-            const pred = c.predicted_icf_codes_consensus || [];
+            const gt = RESULTS.has_gt ? (c[RESULTS.gt_key] || []) : [];
+            const pred = c[RESULTS.pred_key] || [];
 
-            const isExact = gt.length === pred.length && gt.every(code => pred.includes(code));
+            const isExact = RESULTS.has_gt ? (gt.length === pred.length && gt.every(code => pred.includes(code))) : true;
             const statusBadge = document.getElementById('detail-case-match-status');
-            if (isExact) {
-                statusBadge.className = 'text-xs font-bold text-emerald-400 bg-emerald-950/80 px-2.5 py-0.5 rounded border border-emerald-800';
-                statusBadge.innerText = '✓ Coincidencia Exacta';
+            
+            if (RESULTS.has_gt) {
+                if (isExact) {
+                    statusBadge.className = 'text-xs font-bold text-emerald-400 bg-emerald-950/80 px-2.5 py-0.5 rounded border border-emerald-800';
+                    statusBadge.innerText = '✓ Coincidencia Exacta';
+                } else {
+                    statusBadge.className = 'text-xs font-bold text-amber-400 bg-amber-950/80 px-2.5 py-0.5 rounded border border-amber-800';
+                    statusBadge.innerText = '⚠️ Discrepancia';
+                }
+                document.getElementById('detail-gt-count').innerText = `${gt.length} códigos`;
             } else {
-                statusBadge.className = 'text-xs font-bold text-amber-400 bg-amber-950/80 px-2.5 py-0.5 rounded border border-amber-800';
-                statusBadge.innerText = '⚠️ Discrepancia';
+                statusBadge.className = 'text-xs font-bold text-indigo-400 bg-indigo-950/80 px-2.5 py-0.5 rounded border border-indigo-800';
+                statusBadge.innerText = `${pred.length} Códigos CIF Asignados`;
             }
 
-            document.getElementById('detail-gt-count').innerText = `${gt.length} códigos`;
             document.getElementById('detail-pred-count').innerText = `${pred.length} códigos`;
 
-            const gtContainer = document.getElementById('detail-gt-codes');
-            gtContainer.innerHTML = '';
-            gt.forEach(code => {
-                const desc = ICF_DESCRIPTIONS[code] || '';
-                const isHit = pred.includes(code);
-                const tag = document.createElement('span');
-                tag.className = `px-2 py-0.5 rounded text-xs font-medium flex items-center gap-1 border ${
-                    isHit 
-                        ? 'bg-indigo-950/90 text-indigo-300 border-indigo-700' 
-                        : 'bg-rose-950/80 text-rose-300 border-rose-800'
-                }`;
-                tag.title = desc;
-                tag.innerHTML = `<strong>${code}</strong> <span class="text-[10px] text-slate-400">(${desc})</span>`;
-                gtContainer.appendChild(tag);
-            });
+            if (RESULTS.has_gt) {
+                const gtContainer = document.getElementById('detail-gt-codes');
+                gtContainer.innerHTML = '';
+                gt.forEach(code => {
+                    const desc = ICF_DESCRIPTIONS[code] || '';
+                    const isHit = pred.includes(code);
+                    const tag = document.createElement('span');
+                    tag.className = `px-2 py-0.5 rounded text-xs font-medium flex items-center gap-1 border ${
+                        isHit ? 'bg-indigo-950/90 text-indigo-300 border-indigo-700' : 'bg-rose-950/80 text-rose-300 border-rose-800'
+                    }`;
+                    tag.title = desc;
+                    tag.innerHTML = `<strong>${code}</strong> <span class="text-[10px] text-slate-400">(${desc})</span>`;
+                    gtContainer.appendChild(tag);
+                });
+            }
 
             const predContainer = document.getElementById('detail-pred-codes');
             predContainer.innerHTML = '';
             pred.forEach(code => {
                 const desc = ICF_DESCRIPTIONS[code] || '';
-                const isTp = gt.includes(code);
+                const isTp = RESULTS.has_gt ? gt.includes(code) : true;
                 const tag = document.createElement('span');
                 tag.className = `px-2 py-0.5 rounded text-xs font-medium flex items-center gap-1 border ${
-                    isTp 
-                        ? 'bg-emerald-950/90 text-emerald-300 border-emerald-700' 
-                        : 'bg-amber-950/80 text-amber-300 border-amber-800'
+                    isTp ? 'bg-emerald-950/90 text-emerald-300 border-emerald-700' : 'bg-amber-950/80 text-amber-300 border-amber-800'
                 }`;
                 tag.title = desc;
                 tag.innerHTML = `<strong>${code}</strong> <span class="text-[10px] text-slate-400">(${desc})</span>`;
                 predContainer.appendChild(tag);
             });
 
-            const tpList = pred.filter(code => gt.includes(code));
-            const fpList = pred.filter(code => !gt.includes(code));
-            const fnList = gt.filter(code => !pred.includes(code));
+            if (RESULTS.has_gt) {
+                const tpList = pred.filter(code => gt.includes(code));
+                const fpList = pred.filter(code => !gt.includes(code));
+                const fnList = gt.filter(code => !pred.includes(code));
 
-            const auditContainer = document.getElementById('detail-audit-badges');
-            auditContainer.innerHTML = `
-                <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">Aciertos (TP): ${tpList.length} [${tpList.join(', ') || 'ninguno'}]</span>
-                <span class="px-2 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800">Falsos Positivos (FP): ${fpList.length} [${fpList.join(', ') || 'ninguno'}]</span>
-                <span class="px-2 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-800">Falsos Negativos (FN): ${fnList.length} [${fnList.join(', ') || 'ninguno'}]</span>
-            `;
+                const auditContainer = document.getElementById('detail-audit-badges');
+                auditContainer.innerHTML = `
+                    <span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">Aciertos (TP): ${tpList.length} [${tpList.join(', ') || 'ninguno'}]</span>
+                    <span class="px-2 py-0.5 rounded bg-amber-950 text-amber-400 border border-amber-800">Falsos Positivos (FP): ${fpList.length} [${fpList.join(', ') || 'ninguno'}]</span>
+                    <span class="px-2 py-0.5 rounded bg-rose-950 text-rose-400 border border-rose-800">Falsos Negativos (FN): ${fnList.length} [${fnList.join(', ') || 'ninguno'}]</span>
+                `;
+            }
         }
 
         window.addEventListener('DOMContentLoaded', () => {
-            updateKPIs();
             renderCharts();
-            renderTable();
             renderCasesList();
             showCaseDetail(0);
         });

@@ -1,23 +1,24 @@
 # -*- coding: utf-8 -*-
 """
 ===============================================================================
-GENERACIÓN DE FIGURAS Y GRÁFICOS DE DESEMPEÑO DIAGNÓSTICO (stats_v4)
-CALIDAD DE PUBLICACIÓN CIENTÍFICA (300 DPI)
+GENERACIÓN DE FIGURAS Y GRÁFICOS DE DESEMPEÑO DIAGNÓSTICO (TFL)
+CALIDAD DE PUBLICACIÓN CIENTÍFICA (300 DPI, FORMATO APA / EDITORIAL)
 ===============================================================================
 
 Este script genera las figuras visuales comparativas de validez diagnóstica y
-rendimiento F1-score entre los 3 modelos LLM evaluados:
-1. Gemma-4-31B-it
-2. Gemini Flash 3.5
-3. Gemini Flash 3.7
+rendimiento F1-score entre los 3 modelos LLM evaluados con paleta cromática
+unificada y consistente en todo el trabajo:
+1. Gemini Flash 3.5 (#2E86C1, Azul profesional)
+2. Gemini Flash 3.7 (#27AE60, Verde esmeralda)
+3. Gemma-4-31B-it   (#E67E22, Ámbar / Naranja cálido)
 
-Figuras generadas en `results/stats_v4/figuras/`:
--------------------------------------------------
-1. `01_comparativa_global_f1_modelos.png`: Comparativa de F1 (Micro, Macro, Weighted) y Exact Match con IC 95%.
-2. `02_precision_recall_f1_pareado.png`: Desglose pareado de Precisión, Recall y F1 por modelo.
-3. `03_auditoria_per_class_24_codigos.png`: Barras horizontales de F1 por código CIF (24 categorías del Core Set).
-4. `04_desempeno_por_capitulo_cif.png`: Rendimiento comparativo por componentes CIF (b: Cuerpo, d: Actividades, e: Ambiente).
-5. `05_matriz_confusion_tp_fp_fn.png`: Desglose global de Verdaderos Positivos, Falsos Positivos y Falsos Negativos.
+Figuras generadas en `results/TFL/figuras/`:
+-------------------------------------------
+1. `01_comparativa_global_f1_modelos.png` (.pdf, .svg): Comparativa global (Figura 7)
+2. `02_precision_recall_f1_pareado.png` (.pdf, .svg): Desglose pareado de Precisión, Recall y F1
+3. `03_auditoria_per_class_24_codigos.png` (.pdf, .svg): Barras horizontales por código CIF (Figura 8)
+4. `04_desempeno_por_capitulo_cif.png` (.pdf, .svg): Rendimiento por componentes CIF (b, d, e)
+5. `05_matriz_confusion_tp_fp_fn.png` (.pdf, .svg): Desglose de Verdaderos Positivos, FP y FN
 """
 
 import json
@@ -36,18 +37,26 @@ os.makedirs(CARPETA_FIGURAS, exist_ok=True)
 
 plt.rcParams['font.family'] = 'DejaVu Sans'
 plt.rcParams['font.size'] = 10
-plt.rcParams['axes.titlesize'] = 12
+plt.rcParams['axes.titlesize'] = 11.5
 plt.rcParams['axes.labelsize'] = 10
-plt.rcParams['xtick.labelsize'] = 9
-plt.rcParams['ytick.labelsize'] = 9
-plt.rcParams['legend.fontsize'] = 9
-plt.rcParams['figure.titlesize'] = 14
+plt.rcParams['xtick.labelsize'] = 9.5
+plt.rcParams['ytick.labelsize'] = 9.5
+plt.rcParams['legend.fontsize'] = 9.0
+plt.rcParams['figure.titlesize'] = 13
 plt.rcParams['figure.dpi'] = 300
 
+ORDEN_MODELOS = ["gemini_flash_35", "gemini_flash_37", "gemma_31b"]
+
 COLORES_MODELOS = {
-    "gemma_31b": "#1F4E79",       # Azul oscuro elegante
-    "gemini_flash_35": "#4B77BE",  # Azul medio
-    "gemini_flash_37": "#27AE60"   # Verde esmeralda
+    "gemini_flash_35": "#2E86C1",  # Azul profesional
+    "gemini_flash_37": "#27AE60",  # Verde esmeralda
+    "gemma_31b": "#E67E22"        # Ámbar / Naranja cálido
+}
+
+NOMBRES_MODELOS = {
+    "gemini_flash_35": "Gemini Flash 3.5",
+    "gemini_flash_37": "Gemini Flash 3.7",
+    "gemma_31b": "Gemma-4-31B-it"
 }
 
 
@@ -60,16 +69,17 @@ def cargar_datos():
 
 
 def figura_01_comparativa_global(datos):
+    """Figura 7: Comparativa global de Micro-F1, Macro-F1, Weighted-F1 y EMR en corpus sintético."""
     metricas = ["Micro-F1", "Macro-F1", "Weighted-F1", "Exact Match (EMR)"]
     x = np.arange(len(metricas))
     ancho = 0.26
     
-    fig, ax = plt.subplots(figsize=(10, 5.5))
+    fig, ax = plt.subplots(figsize=(9.6, 5.2))
     
-    for idx, d in enumerate(datos):
-        m_id = d["modelo_id"]
-        m_nom = d["modelo_nombre"]
-        color = COLORES_MODELOS.get(m_id, "#333333")
+    for idx, m_id in enumerate(ORDEN_MODELOS):
+        d = next(r for r in datos if r["modelo_id"] == m_id)
+        m_nom = NOMBRES_MODELOS[m_id]
+        color = COLORES_MODELOS[m_id]
         
         m = d["metricas"]
         ci = d["ci_95"]
@@ -96,16 +106,15 @@ def figura_01_comparativa_global(datos):
         
         offset = (idx - 1) * ancho
         barras = ax.bar(x + offset, vals, width=ancho, yerr=[yerr_low, yerr_high],
-                        capsize=4, label=m_nom, color=color, alpha=0.88, edgecolor="black", linewidth=0.7)
+                        capsize=4, label=m_nom, color=color, alpha=0.90, edgecolor="black", linewidth=0.7)
         
         for bar, val in zip(barras, vals):
             y_pos = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width() / 2., y_pos + 0.02,
-                    f"{val:.2f}" if val < 1.0 else f"{val:.1f}",
+            ax.text(bar.get_x() + bar.get_width() / 2., y_pos + 0.015,
+                    f"{val:.2f}",
                     ha='center', va='bottom', fontsize=8.5, fontweight='bold')
 
     ax.set_ylabel("Puntuación / Proporción (0 a 1)", fontweight='bold')
-#     ax.set_title("Comparativa Global de Desempeño Diagnóstico (F1-Score e Intervalos 95% Bootstrap)", fontweight='bold', pad=15)
     ax.set_xticks(x)
     ax.set_xticklabels(metricas, fontweight='bold')
     ax.set_ylim(0.70, 1.05)
@@ -113,28 +122,31 @@ def figura_01_comparativa_global(datos):
     ax.legend(frameon=True, facecolor='#F8F9F9', edgecolor='#BDC3C7', loc="lower right")
     
     plt.tight_layout()
-    ruta_salida = CARPETA_FIGURAS / "01_comparativa_global_f1_modelos.png"
-    plt.savefig(ruta_salida, dpi=300)
+    ruta_salida = CARPETA_FIGURAS / "01_comparativa_global_f1_modelos"
+    plt.savefig(ruta_salida.with_suffix(".png"), dpi=300, bbox_inches="tight")
+    plt.savefig(ruta_salida.with_suffix(".pdf"), format="pdf", bbox_inches="tight")
+    plt.savefig(ruta_salida.with_suffix(".svg"), format="svg", bbox_inches="tight")
     plt.close()
-    print(f" [OK] Figura 1 guardada: {ruta_salida}")
+    print(f" [OK] Figura 7 guardada: {ruta_salida}.png / .pdf / .svg")
 
 
 def figura_02_precision_recall_f1(datos):
+    """Comparativa pareada Precisión, Sensibilidad y Micro-F1."""
     niveles = ["Precisión Micro", "Recall Micro", "Micro-F1"]
     x = np.arange(len(niveles))
     ancho = 0.26
     
     fig, ax = plt.subplots(figsize=(9, 5))
     
-    for idx, d in enumerate(datos):
-        m_id = d["modelo_id"]
-        m_nom = d["modelo_nombre"]
-        color = COLORES_MODELOS.get(m_id, "#333333")
+    for idx, m_id in enumerate(ORDEN_MODELOS):
+        d = next(r for r in datos if r["modelo_id"] == m_id)
+        m_nom = NOMBRES_MODELOS[m_id]
+        color = COLORES_MODELOS[m_id]
         m = d["metricas"]["micro"]
         
         vals = [m["precision"], m["recall"], m["f1"]]
         offset = (idx - 1) * ancho
-        barras = ax.bar(x + offset, vals, width=ancho, label=m_nom, color=color, alpha=0.88, edgecolor="black", linewidth=0.7)
+        barras = ax.bar(x + offset, vals, width=ancho, label=m_nom, color=color, alpha=0.90, edgecolor="black", linewidth=0.7)
         
         for bar, val in zip(barras, vals):
             y_pos = bar.get_height()
@@ -142,7 +154,6 @@ def figura_02_precision_recall_f1(datos):
                     f"{val*100:.2f}%", ha='center', va='bottom', fontsize=8.5, fontweight='bold')
 
     ax.set_ylabel("Rendimiento (%)", fontweight='bold')
-#     ax.set_title("Eficacia Diagnóstica Global (Precisión, Sensibilidad y F1 a Nivel Micro)", fontweight='bold', pad=15)
     ax.set_xticks(x)
     ax.set_xticklabels(niveles, fontweight='bold')
     ax.set_ylim(0.90, 1.02)
@@ -150,48 +161,52 @@ def figura_02_precision_recall_f1(datos):
     ax.legend(frameon=True, facecolor='#F8F9F9', edgecolor='#BDC3C7', loc="lower left")
     
     plt.tight_layout()
-    ruta_salida = CARPETA_FIGURAS / "02_precision_recall_f1_pareado.png"
-    plt.savefig(ruta_salida, dpi=300)
+    ruta_salida = CARPETA_FIGURAS / "02_precision_recall_f1_pareado"
+    plt.savefig(ruta_salida.with_suffix(".png"), dpi=300, bbox_inches="tight")
+    plt.savefig(ruta_salida.with_suffix(".pdf"), format="pdf", bbox_inches="tight")
+    plt.savefig(ruta_salida.with_suffix(".svg"), format="svg", bbox_inches="tight")
     plt.close()
-    print(f" [OK] Figura 2 guardada: {ruta_salida}")
+    print(f" [OK] Figura 2 guardada: {ruta_salida}.png / .pdf / .svg")
 
 
 def figura_03_auditoria_per_class(datos):
-    gemma = next(r for r in datos if r["modelo_id"] == "gemma_31b")
+    """Figura 8: Auditoría individualizada de F1-Score en las 24 categorías CIF del corpus sintético."""
     g35 = next(r for r in datos if r["modelo_id"] == "gemini_flash_35")
-    g36 = next(r for r in datos if r["modelo_id"] == "gemini_flash_37")
+    g37 = next(r for r in datos if r["modelo_id"] == "gemini_flash_37")
+    gemma = next(r for r in datos if r["modelo_id"] == "gemma_31b")
     
-    gemma_clases = gemma["metricas"]["por_clase"]
     g35_clases = g35["metricas"]["por_clase"]
-    g36_clases = g36["metricas"]["por_clase"]
+    g37_clases = g37["metricas"]["por_clase"]
+    gemma_clases = gemma["metricas"]["por_clase"]
     
-    codigos = sorted(list(gemma_clases.keys()), reverse=True)
+    codigos = sorted(list(g35_clases.keys()), reverse=True)
     y = np.arange(len(codigos))
     ancho = 0.28
     
     etiquetas = []
-    f1_gemma = []
     f1_g35 = []
-    f1_g36 = []
+    f1_g37 = []
+    f1_gemma = []
     
     for c in codigos:
-        nom = gemma_clases[c]["nombre"]
-        sup = gemma_clases[c]["soporte"]
+        nom = g35_clases[c]["nombre"]
+        sup = g35_clases[c]["soporte"]
         nom_corto = nom[:32] + "..." if len(nom) > 32 else nom
         etiquetas.append(f"{c} (n={sup}) - {nom_corto}")
         
-        f1_gemma.append(gemma_clases[c]["f1"])
         f1_g35.append(g35_clases[c]["f1"])
-        f1_g36.append(g36_clases[c]["f1"])
+        f1_g37.append(g37_clases[c]["f1"])
+        f1_gemma.append(gemma_clases[c]["f1"])
         
     fig, ax = plt.subplots(figsize=(12, 11))
     
-    ax.barh(y + ancho, f1_gemma, height=ancho, label="Gemma-4-31B-it", color=COLORES_MODELOS["gemma_31b"], alpha=0.88, edgecolor="black", linewidth=0.5)
-    ax.barh(y, f1_g35, height=ancho, label="Gemini Flash 3.5", color=COLORES_MODELOS["gemini_flash_35"], alpha=0.88, edgecolor="black", linewidth=0.5)
-    ax.barh(y - ancho, f1_g36, height=ancho, label="Gemini Flash 3.7", color=COLORES_MODELOS["gemini_flash_37"], alpha=0.88, edgecolor="black", linewidth=0.5)
+    # Orden de barras idéntico al de historias humanas (Figura 13):
+    # Flash 3.5 (arriba, azul), Flash 3.7 (centro, verde), Gemma-4-31B-it (abajo, naranja)
+    ax.barh(y + ancho, f1_g35, height=ancho, label=NOMBRES_MODELOS["gemini_flash_35"], color=COLORES_MODELOS["gemini_flash_35"], alpha=0.90, edgecolor="black", linewidth=0.6)
+    ax.barh(y, f1_g37, height=ancho, label=NOMBRES_MODELOS["gemini_flash_37"], color=COLORES_MODELOS["gemini_flash_37"], alpha=0.90, edgecolor="black", linewidth=0.6)
+    ax.barh(y - ancho, f1_gemma, height=ancho, label=NOMBRES_MODELOS["gemma_31b"], color=COLORES_MODELOS["gemma_31b"], alpha=0.90, edgecolor="black", linewidth=0.6)
     
     ax.set_xlabel("F1-Score por Categoría CIF", fontweight='bold')
-#     ax.set_title("Auditoría Individualizada Per Class (24 Categorías CIF del Core Set de Dolor Crónico)", fontweight='bold', pad=15)
     ax.set_yticks(y)
     ax.set_yticklabels(etiquetas, fontsize=8.5)
     ax.set_xlim(0, 1.08)
@@ -199,13 +214,16 @@ def figura_03_auditoria_per_class(datos):
     ax.legend(frameon=True, facecolor='#F8F9F9', edgecolor='#BDC3C7', loc="lower right")
     
     plt.tight_layout()
-    ruta_salida = CARPETA_FIGURAS / "03_auditoria_per_class_24_codigos.png"
-    plt.savefig(ruta_salida, dpi=300)
+    ruta_salida = CARPETA_FIGURAS / "03_auditoria_per_class_24_codigos"
+    plt.savefig(ruta_salida.with_suffix(".png"), dpi=300, bbox_inches="tight")
+    plt.savefig(ruta_salida.with_suffix(".pdf"), format="pdf", bbox_inches="tight")
+    plt.savefig(ruta_salida.with_suffix(".svg"), format="svg", bbox_inches="tight")
     plt.close()
-    print(f" [OK] Figura 3 guardada: {ruta_salida}")
+    print(f" [OK] Figura 8 guardada: {ruta_salida}.png / .pdf / .svg")
 
 
 def figura_04_desempeno_por_capitulo(datos):
+    """Comparativa por componentes CIF (b, d, e)."""
     capitulos = [
         ("b", "Funciones Corporales (b)\n[11 códigos]"),
         ("d", "Actividades y Participación (d)\n[11 códigos]"),
@@ -216,10 +234,10 @@ def figura_04_desempeno_por_capitulo(datos):
     
     fig, ax = plt.subplots(figsize=(9.5, 5))
     
-    for idx, d in enumerate(datos):
-        m_id = d["modelo_id"]
-        m_nom = d["modelo_nombre"]
-        color = COLORES_MODELOS.get(m_id, "#333333")
+    for idx, m_id in enumerate(ORDEN_MODELOS):
+        d = next(r for r in datos if r["modelo_id"] == m_id)
+        m_nom = NOMBRES_MODELOS[m_id]
+        color = COLORES_MODELOS[m_id]
         clases = d["metricas"]["por_clase"]
         
         f1_capitulos = []
@@ -233,7 +251,7 @@ def figura_04_desempeno_por_capitulo(datos):
             f1_capitulos.append(f1_w)
             
         offset = (idx - 1) * ancho
-        barras = ax.bar(x + offset, f1_capitulos, width=ancho, label=m_nom, color=color, alpha=0.88, edgecolor="black", linewidth=0.7)
+        barras = ax.bar(x + offset, f1_capitulos, width=ancho, label=m_nom, color=color, alpha=0.90, edgecolor="black", linewidth=0.7)
         
         for bar, val in zip(barras, f1_capitulos):
             y_pos = bar.get_height()
@@ -241,7 +259,6 @@ def figura_04_desempeno_por_capitulo(datos):
                     f"{val:.2f}", ha='center', va='bottom', fontsize=8.5, fontweight='bold')
 
     ax.set_ylabel("F1-Score Ponderado por Componente", fontweight='bold')
-#     ax.set_title("Desempeño Diagnóstico por Componentes de la Clasificación CIF (OMS)", fontweight='bold', pad=15)
     ax.set_xticks(x)
     ax.set_xticklabels([c[1] for c in capitulos], fontweight='bold')
     ax.set_ylim(0.85, 1.05)
@@ -249,24 +266,29 @@ def figura_04_desempeno_por_capitulo(datos):
     ax.legend(frameon=True, facecolor='#F8F9F9', edgecolor='#BDC3C7', loc="lower right")
     
     plt.tight_layout()
-    ruta_salida = CARPETA_FIGURAS / "04_desempeno_por_capitulo_cif.png"
-    plt.savefig(ruta_salida, dpi=300)
+    ruta_salida = CARPETA_FIGURAS / "04_desempeno_por_capitulo_cif"
+    plt.savefig(ruta_salida.with_suffix(".png"), dpi=300, bbox_inches="tight")
+    plt.savefig(ruta_salida.with_suffix(".pdf"), format="pdf", bbox_inches="tight")
+    plt.savefig(ruta_salida.with_suffix(".svg"), format="svg", bbox_inches="tight")
     plt.close()
-    print(f" [OK] Figura 4 guardada: {ruta_salida}")
+    print(f" [OK] Figura 4 guardada: {ruta_salida}.png / .pdf / .svg")
 
 
 def figura_05_matriz_confusion(datos):
-    modelos_nom = [d["modelo_nombre"] for d in datos]
+    """Desglose de aciertos (TP) y auditoría de errores (FP vs FN)."""
+    modelos_nom = [NOMBRES_MODELOS[m_id] for m_id in ORDEN_MODELOS]
+    colores_tp = [COLORES_MODELOS[m_id] for m_id in ORDEN_MODELOS]
     x = np.arange(len(modelos_nom))
     ancho = 0.55
     
-    tps = [d["metricas"]["confusion_global"]["tp"] for d in datos]
-    fps = [d["metricas"]["confusion_global"]["fp"] for d in datos]
-    fns = [d["metricas"]["confusion_global"]["fn"] for d in datos]
+    datos_dict = {d["modelo_id"]: d for d in datos}
+    tps = [datos_dict[m_id]["metricas"]["confusion_global"]["tp"] for m_id in ORDEN_MODELOS]
+    fps = [datos_dict[m_id]["metricas"]["confusion_global"]["fp"] for m_id in ORDEN_MODELOS]
+    fns = [datos_dict[m_id]["metricas"]["confusion_global"]["fn"] for m_id in ORDEN_MODELOS]
     
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4.8), gridspec_kw={'width_ratios': [1.3, 1]})
     
-    barras_tp = ax1.bar(x, tps, width=ancho, color=["#1F4E79", "#4B77BE", "#27AE60"], alpha=0.88, edgecolor="black", linewidth=0.8)
+    barras_tp = ax1.bar(x, tps, width=ancho, color=colores_tp, alpha=0.90, edgecolor="black", linewidth=0.8)
     ax1.set_ylabel("Instancias Correctas (TP)", fontweight='bold')
     ax1.set_title("Aciertos Diagnósticos (Verdaderos Positivos / 465)", fontweight='bold')
     ax1.set_xticks(x)
@@ -301,15 +323,18 @@ def figura_05_matriz_confusion(datos):
                  f"{int(y_pos)}", ha='center', va='bottom', fontsize=8.5, fontweight='bold')
         
     plt.tight_layout()
-    ruta_salida = CARPETA_FIGURAS / "05_matriz_confusion_tp_fp_fn.png"
-    plt.savefig(ruta_salida, dpi=300)
+    ruta_salida = CARPETA_FIGURAS / "05_matriz_confusion_tp_fp_fn"
+    plt.savefig(ruta_salida.with_suffix(".png"), dpi=300, bbox_inches="tight")
+    plt.savefig(ruta_salida.with_suffix(".pdf"), format="pdf", bbox_inches="tight")
+    plt.savefig(ruta_salida.with_suffix(".svg"), format="svg", bbox_inches="tight")
     plt.close()
-    print(f" [OK] Figura 5 guardada: {ruta_salida}")
+    print(f" [OK] Figura 5 guardada: {ruta_salida}.png / .pdf / .svg")
 
 
 def main():
     print("=" * 75)
-    print(" 🎨 GENERACIÓN DE FIGURAS ESTADÍSTICAS Y GRÁFICOS COMPARATIVOS (stats_v4)")
+    print(" 🎨 GENERACIÓN DE FIGURAS ESTADÍSTICAS Y GRÁFICOS COMPARATIVOS (TFL)")
+    print("    Paleta Unificada Tri-Modelo: Flash 3.5 (Azul), Flash 3.7 (Verde), Gemma (Naranja)")
     print("=" * 75)
     
     datos = cargar_datos()

@@ -30,6 +30,7 @@ consulta/
 agent_output/
 .agents/
 AGENTS.md
+presentation/
 
 # ==============================================================================
 # IDEs y Editores de código
@@ -49,3 +50,13 @@ app/node_modules/
 .DS_Store
 Thumbs.db
 bug_fix/
+
+scripts/archive_audit/
+*.summary.txt
+
+
+# Salidas vectoriales secundarias y tablas Word intermedias
+results/TFL/figuras/*.pdf
+results/TFL/figuras/*.svg
+results/TFL/tablas/*.docx
+

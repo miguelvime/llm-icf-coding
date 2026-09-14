@@ -39,7 +39,9 @@ PYTHON_SCRIPTS = [
     ("14_plot_human_annotated.py", "Figuras de validación humana (300 DPI)"),
     ("16_generar_informe_word_completo.py", "Informe clínico integrado en Word"),
     ("17_workflow_diagram.py", "Diagramas metodológicos del flujo (PNG/SVG/PDF)"),
-    ("18_generar_dashboard_html.py", "Dashboard interactivo HTML e informe ejecutivo")
+    ("18_generar_dashboard_html.py", "Dashboard interactivo HTML e informe ejecutivo"),
+    ("21_analisis_ablacion_consenso_human.py", "Análisis de ablación y consenso en cohorte humana"),
+    ("22_plot_ablacion_consenso_human.py", "Figuras de ablación y consenso en cohorte humana (300 DPI)")
 ]
 
 R_SCRIPTS = [
@@ -48,7 +50,9 @@ R_SCRIPTS = [
     ("10_generar_tabla_fiabilidad_apa.R", "Tabla Word APA de fiabilidad"),
     ("11_generar_tabla_consenso_apa.R", "Tabla Word APA de estrategias de consenso"),
     ("12_tabla_sensibilidad_ablacion_apa.R", "Tabla Word APA de ablación de b280"),
-    ("15_generar_tablas_human_apa.R", "Tablas Word APA de validación humana")
+    ("15_generar_tablas_human_apa.R", "Tablas Word APA de validación humana"),
+    ("23_generar_tabla_consenso_human_apa.R", "Tabla Word APA de consenso en cohorte humana"),
+    ("24_generar_tabla_ablacion_human_apa.R", "Tabla Word APA de ablación en cohorte humana")
 ]
 
 def main():
