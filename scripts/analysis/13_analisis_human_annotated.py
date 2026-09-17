@@ -53,14 +53,20 @@ COMPONENTES_CIF = {
 
 codigos_cif = sorted(list(DICCIONARIO_CIF.keys()))
 
-with open(GT_PATH, 'r', encoding='utf-8') as f:
-    gt_data = json.load(f)
-with open(F35_PATH, 'r', encoding='utf-8') as f:
-    f35_data = json.load(f)
-with open(F37_PATH, 'r', encoding='utf-8') as f:
-    f37_data = json.load(f)
-with open(GEMMA_PATH, 'r', encoding='utf-8') as f:
-    gemma_data = json.load(f)
+# Historias empleadas como ejemplos dentro del prompt codificador: se excluyen
+# del análisis para evitar fuga de información (N = 21 -> N = 19).
+HISTORIAS_EXCLUIDAS = {'002_1', '012_1'}
+
+
+def cargar_filtrado(ruta):
+    with open(ruta, 'r', encoding='utf-8') as f:
+        datos = json.load(f)
+    return [d for d in datos if d.get('id_clinical_text') not in HISTORIAS_EXCLUIDAS]
+
+
+f35_data = cargar_filtrado(F35_PATH)
+f37_data = cargar_filtrado(F37_PATH)
+gemma_data = cargar_filtrado(GEMMA_PATH)
 
 def calcular_fiabilidad_iteraciones(dataset):
     n_historias = len(dataset)
@@ -178,10 +184,12 @@ def evaluar_desempeno(dataset):
         comp_metrics[comp]['soporte'] += sup_c
         comp_metrics[comp]['f1_list'].append(f_c)
         
-        macro_p_l.append(p_c)
-        macro_r_l.append(r_c)
-        macro_f1_l.append(f_c)
-        
+        # Macro solo sobre las categorías con al menos una mención en la referencia
+        if sup_c > 0:
+            macro_p_l.append(p_c)
+            macro_r_l.append(r_c)
+            macro_f1_l.append(f_c)
+
         w_p_l.append(p_c * sup_c)
         w_r_l.append(r_c * sup_c)
         w_f1_l.append(f_c * sup_c)
@@ -213,11 +221,43 @@ def evaluar_desempeno(dataset):
         'por_componente': comp_metrics
     }
 
-def bootstrap_ci(dataset, n_iter=1000, seed=2026):
-    random.seed(seed)
+def agrupar_por_combinacion(dataset):
+    """Agrupa las historias por combinación de códigos (conglomerado)."""
+    clusters = {}
+    for item in dataset:
+        clusters.setdefault(item['id_code_combination'], []).append(item)
+    return clusters
+
+
+def micro_f1_rapido(dataset):
+    """Micro-F1 sin desglose per class (usado en el remuestreo pareado)."""
+    tp = fp = fn = 0
+    for item in dataset:
+        gt = set(item.get('icf_codes', []))
+        pred = set(item.get('predicted_icf_codes_consensus', []))
+        tp += len(gt & pred)
+        fp += len(pred - gt)
+        fn += len(gt - pred)
+    if tp == 0:
+        return 0.0
+    prec = tp / (tp + fp)
+    rec = tp / (tp + fn)
+    return (2 * prec * rec / (prec + rec)) if (prec + rec) > 0 else 0.0
+
+
+def bootstrap_ci(dataset, n_iter=2000, seed=2026):
+    """
+    IC 95% por bootstrap percentil por conglomerados: se remuestrean las
+    combinaciones de códigos y no las historias individuales, porque las
+    historias de una misma combinación comparten los códigos de referencia.
+    """
+    rng = random.Random(seed)
+    clusters = agrupar_por_combinacion(dataset)
+    ids_cluster = sorted(clusters)
     micros, macros, weighteds = [], [], []
     for _ in range(n_iter):
-        sample = [random.choice(dataset) for _ in range(len(dataset))]
+        elegidos = [rng.choice(ids_cluster) for _ in range(len(ids_cluster))]
+        sample = [h for c in elegidos for h in clusters[c]]
         res = evaluar_desempeno(sample)
         micros.append(res['micro']['f1'])
         macros.append(res['macro']['f1'])
@@ -230,6 +270,58 @@ def bootstrap_ci(dataset, n_iter=1000, seed=2026):
         'macro': (macros[int(0.025 * n_iter)], macros[int(0.975 * n_iter)]),
         'weighted': (weighteds[int(0.025 * n_iter)], weighteds[int(0.975 * n_iter)])
     }
+
+
+def diferencias_pareadas(datasets_por_modelo, n_iter=2000, seed=2026):
+    """
+    Prueba de bootstrap pareado sobre la diferencia de Micro-F1 entre modelos:
+    en cada iteración se remuestrea el mismo conjunto de conglomerados para
+    ambos modelos, de modo que el IC 95% corresponde a δ = Micro-F1(A) − Micro-F1(B).
+    """
+    pares = [
+        ('gemma_31b', 'flash_37'),
+        ('gemma_31b', 'flash_35'),
+        ('flash_37', 'flash_35'),
+    ]
+    nombres = {
+        'gemma_31b': 'Gemma-4-31B-it',
+        'flash_37': 'Gemini Flash 3.7',
+        'flash_35': 'Gemini Flash 3.5',
+    }
+
+    por_modelo = {
+        mid: {h['id_clinical_text']: h for h in datos}
+        for mid, datos in datasets_por_modelo.items()
+    }
+    clusters = {}
+    for h in next(iter(datasets_por_modelo.values())):
+        clusters.setdefault(h['id_code_combination'], []).append(h['id_clinical_text'])
+    ids_cluster = sorted(clusters)
+
+    rng = random.Random(seed)
+    muestras_ids = []
+    for _ in range(n_iter):
+        elegidos = [rng.choice(ids_cluster) for _ in range(len(ids_cluster))]
+        muestras_ids.append([tid for c in elegidos for tid in clusters[c]])
+
+    f1_por_iter = {
+        mid: [micro_f1_rapido([mapa[tid] for tid in ids]) for ids in muestras_ids]
+        for mid, mapa in por_modelo.items()
+    }
+
+    comparaciones = []
+    for a, b in pares:
+        punto = micro_f1_rapido(datasets_por_modelo[a]) - micro_f1_rapido(datasets_por_modelo[b])
+        diffs = sorted(x - y for x, y in zip(f1_por_iter[a], f1_por_iter[b]))
+        ic_low, ic_high = diffs[int(0.025 * n_iter)], diffs[int(0.975 * n_iter)]
+        comparaciones.append({
+            'modelo_a': nombres[a],
+            'modelo_b': nombres[b],
+            'diferencia_micro_f1': punto,
+            'ic_95': (ic_low, ic_high),
+            'excluye_cero': ic_low > 0 or ic_high < 0
+        })
+    return comparaciones
 
 if __name__ == '__main__':
     fiab35 = calcular_fiabilidad_iteraciones(f35_data)
@@ -244,11 +336,29 @@ if __name__ == '__main__':
     des_gemma = evaluar_desempeno(gemma_data)
     ci_gemma = bootstrap_ci(gemma_data)
 
+    comparaciones = diferencias_pareadas({
+        'flash_35': f35_data,
+        'flash_37': f37_data,
+        'gemma_31b': gemma_data
+    })
+
+    print(f'\n[INFO] N analizado = {len(gemma_data)} '
+          f'(excluidas {sorted(HISTORIAS_EXCLUIDAS)} como ejemplos del prompt)')
+    print('\n▶ COMPARACIÓN PAREADA ENTRE MODELOS (bootstrap pareado por conglomerados; B = 2000)')
+    for c in comparaciones:
+        ic = f"[{c['ic_95'][0]:+.4f}, {c['ic_95'][1]:+.4f}]"
+        conclusion = 'Excluye el cero' if c['excluye_cero'] else 'Incluye el cero'
+        print(f"  {c['modelo_a']} − {c['modelo_b']}: "
+              f"Δ = {c['diferencia_micro_f1']:+.4f}  IC 95% {ic}  {conclusion}")
+
     resumen = {
+        'n_analizado': len(gemma_data),
+        'historias_excluidas': sorted(HISTORIAS_EXCLUIDAS),
         'flash_35': {'fiabilidad': fiab35, 'desempeno': des35, 'ci_95': ci35},
         'flash_37': {'fiabilidad': fiab36, 'desempeno': des36, 'ci_95': ci36},
         'flash_36': {'fiabilidad': fiab36, 'desempeno': des36, 'ci_95': ci36},
-        'gemma_31b': {'fiabilidad': fiab_gemma, 'desempeno': des_gemma, 'ci_95': ci_gemma}
+        'gemma_31b': {'fiabilidad': fiab_gemma, 'desempeno': des_gemma, 'ci_95': ci_gemma},
+        'comparaciones_pareadas': comparaciones
     }
 
     out_dir = BASE_DIR / 'results' / 'human_text'

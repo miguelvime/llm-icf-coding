@@ -1,0 +1,38 @@
+{
+  "metodo": "Bootstrap pareado percentil por conglomerados (remuestreo de combinaciones de códigos)",
+  "n_iteraciones": 2000,
+  "semilla": 2026,
+  "metrica": "Micro-F1",
+  "comparaciones": [
+    {
+      "modelo_a": "Gemma-4-31B-it",
+      "modelo_b": "Gemini Flash 3.7",
+      "diferencia_micro_f1": -0.005267092174113142,
+      "ic_95": [
+        -0.01203930026359945,
+        0.0011426968154978345
+      ],
+      "excluye_cero": false
+    },
+    {
+      "modelo_a": "Gemma-4-31B-it",
+      "modelo_b": "Gemini Flash 3.5",
+      "diferencia_micro_f1": -0.0021778460098504926,
+      "ic_95": [
+        -0.008683578549677828,
+        0.004513357508268201
+      ],
+      "excluye_cero": false
+    },
+    {
+      "modelo_a": "Gemini Flash 3.7",
+      "modelo_b": "Gemini Flash 3.5",
+      "diferencia_micro_f1": 0.003089246164262649,
+      "ic_95": [
+        -0.0014579559240339712,
+        0.009269719363265039
+      ],
+      "excluye_cero": false
+    }
+  ]
+}

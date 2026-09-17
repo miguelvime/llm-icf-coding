@@ -51,10 +51,21 @@ DICCIONARIO_CIF = {
 }
 codigos_cif = sorted(list(DICCIONARIO_CIF.keys()))
 
+# Historias empleadas como ejemplos dentro del prompt codificador: se excluyen
+# del análisis para evitar fuga de información (N = 21 -> N = 19).
+HISTORIAS_EXCLUIDAS = {'002_1', '012_1'}
+
+
+def cargar_filtrado(ruta):
+    with open(ruta, "r", encoding="utf-8") as f:
+        datos = json.load(f)
+    return [d for d in datos if d.get("id_clinical_text") not in HISTORIAS_EXCLUIDAS]
+
+
 with open(GT_PATH, "r", encoding="utf-8") as f: gt_data = json.load(f)
-with open(F35_PATH, "r", encoding="utf-8") as f: f35_data = json.load(f)
-with open(F37_PATH, "r", encoding="utf-8") as f: f37_data = json.load(f)
-with open(GEMMA_PATH, "r", encoding="utf-8") as f: gemma_data = json.load(f)
+f35_data = cargar_filtrado(F35_PATH)
+f37_data = cargar_filtrado(F37_PATH)
+gemma_data = cargar_filtrado(GEMMA_PATH)
 
 # -----------------------------------------------------------------------------
 # 1. FUNCIONES PARA ESTRATEGIAS DE CONSENSO
@@ -127,10 +138,12 @@ def evaluar_estrategia(datos, pred_fn):
         s_c = per_class[c]['soporte']
         denom = 2 * tp_c + fp_c + fn_c
         f1_c = (2 * tp_c) / denom if denom > 0 else 0.0
-        macro_list.append(f1_c)
+        # Macro solo sobre las categorías con al menos una mención en la referencia
+        if s_c > 0:
+            macro_list.append(f1_c)
         w_list.append(f1_c * s_c)
 
-    macro_f1 = float(np.mean(macro_list))
+    macro_f1 = float(np.mean(macro_list)) if macro_list else 0.0
     weighted_f1 = float(sum(w_list) / tot_s) if tot_s > 0 else 0.0
 
     return {
@@ -228,10 +241,12 @@ def evaluar_ablacion(datos, exclude_codes=None):
         s_c = per_class[c]['soporte']
         denom = 2 * tp_c + fp_c + fn_c
         f1_c = (2 * tp_c) / denom if denom > 0 else 0.0
-        macro_list.append(f1_c)
+        # Macro solo sobre las categorías con al menos una mención en la referencia
+        if s_c > 0:
+            macro_list.append(f1_c)
         w_list.append(f1_c * s_c)
 
-    macro_f1 = float(np.mean(macro_list))
+    macro_f1 = float(np.mean(macro_list)) if macro_list else 0.0
     weighted_f1 = float(sum(w_list) / tot_s) if tot_s > 0 else 0.0
 
     return {

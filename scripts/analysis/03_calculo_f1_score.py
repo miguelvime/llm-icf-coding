@@ -16,13 +16,27 @@ Estructura de Presentación Científica (Estilo Publicación Médica):
   (Parámetros de Corpus, Matriz de Confusión, Exact Match, Micro, Macro y Weighted F1 con IC 95%).
 - Tabla de Auditoría Detallada: Las 24 Categorías CIF del Core Set de Dolor Crónico.
 
-Salidas generadas en `results/stats_v4/`:
+Inferencia estadística
+----------------------
+- IC 95% por bootstrap percentil POR CONGLOMERADOS (B = 2000; semilla 2026): se
+  remuestrean las 38 combinaciones de códigos y no las historias individuales,
+  porque las historias generadas a partir de una misma combinación comparten los
+  códigos de referencia y no son observaciones independientes.
+- Comparación entre modelos mediante PRUEBA DE BOOTSTRAP PAREADO (paired
+  bootstrap test): en cada iteración se remuestrea el mismo conjunto de
+  conglomerados para ambos modelos y se calcula el IC 95% de la diferencia
+  δ = Micro-F1(A) − Micro-F1(B). Se concluye que existe diferencia cuando el
+  IC 95% excluye el cero.
+
+Salidas generadas:
 - Documento Word (.docx): `tablas_desempeno.docx` con tablas nativas editables y diseño APA.
 - Archivo JSON: `resumen_f1_score.json` con todos los estadísticos descriptivos.
+- Archivo JSON: `resumen_comparaciones_pareadas.json` con las diferencias pareadas.
 """
 
 import json
 import random
+from collections import defaultdict
 from pathlib import Path
 from typing import Dict, List, Any, Set, Tuple
 
@@ -60,6 +74,13 @@ MODELOS = [
         "nombre": "Gemini Flash 3.7",
         "archivo": LLM_DIR / "2026-08-25-3.7-flash-codified.json"
     }
+]
+
+# Comparaciones pareadas entre modelos (dirección A − B)
+PARES_COMPARACION = [
+    ("gemma_31b", "gemini_flash_37"),
+    ("gemma_31b", "gemini_flash_35"),
+    ("gemini_flash_37", "gemini_flash_35"),
 ]
 
 # Diccionario oficial de las 24 categorías CIF del Core Set de Dolor Crónico Generalizado
@@ -229,16 +250,48 @@ def calcular_desempeno(historias: List[Dict[str, Any]], codigos_cif: List[str]) 
     }
 
 
-def calcular_bootstrap_ci(historias: List[Dict[str, Any]], codigos_cif: List[str], n_iter: int = 1000, semilla: int = 2026) -> Dict[str, Tuple[float, float]]:
-    random.seed(semilla)
-    n_docs = len(historias)
+def agrupar_por_combinacion(historias: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
+    """Agrupa las historias por combinación de códigos (conglomerado)."""
+    clusters: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    for item in historias:
+        clusters[item["id_code_combination"]].append(item)
+    return dict(clusters)
+
+
+def micro_f1_rapido(historias: List[Dict[str, Any]]) -> float:
+    """Micro-F1 sin desglose per class (usado en el remuestreo pareado)."""
+    tp = fp = fn = 0
+    for item in historias:
+        gt = set(item.get("icf_codes", []))
+        pred = set(item.get("predicted_icf_codes_consensus", []))
+        tp += len(gt & pred)
+        fp += len(pred - gt)
+        fn += len(gt - pred)
+    if tp == 0:
+        return 0.0
+    prec = tp / (tp + fp)
+    rec = tp / (tp + fn)
+    return (2 * prec * rec / (prec + rec)) if (prec + rec) > 0 else 0.0
+
+
+def calcular_bootstrap_ci(historias: List[Dict[str, Any]], codigos_cif: List[str], n_iter: int = 2000, semilla: int = 2026) -> Dict[str, Tuple[float, float]]:
+    """
+    IC 95% por bootstrap percentil por conglomerados: se remuestrean las
+    combinaciones de códigos, no las historias individuales, porque las
+    historias generadas a partir de una misma combinación comparten los
+    códigos de referencia y no son observaciones independientes.
+    """
+    rng = random.Random(semilla)
+    clusters = agrupar_por_combinacion(historias)
+    ids_cluster = sorted(clusters)
 
     boot_micro_f1: List[float] = []
     boot_macro_f1: List[float] = []
     boot_weighted_f1: List[float] = []
 
     for _ in range(n_iter):
-        muestra = [random.choice(historias) for _ in range(n_docs)]
+        elegidos = [rng.choice(ids_cluster) for _ in range(len(ids_cluster))]
+        muestra = [h for c in elegidos for h in clusters[c]]
         res = calcular_desempeno(muestra, codigos_cif)
         boot_micro_f1.append(res["micro"]["f1"])
         boot_macro_f1.append(res["macro"]["f1"])
@@ -256,6 +309,58 @@ def calcular_bootstrap_ci(historias: List[Dict[str, Any]], codigos_cif: List[str
         "macro_f1": (boot_macro_f1[idx_low], boot_macro_f1[idx_high]),
         "weighted_f1": (boot_weighted_f1[idx_low], boot_weighted_f1[idx_high])
     }
+
+
+def calcular_diferencias_pareadas(resultados: List[Dict[str, Any]], n_iter: int = 2000, semilla: int = 2026) -> List[Dict[str, Any]]:
+    """
+    Prueba de bootstrap pareado (paired bootstrap test) sobre la diferencia
+    de Micro-F1 entre modelos. En cada iteración se remuestrea el mismo
+    conjunto de conglomerados para ambos modelos, de modo que el IC 95%
+    corresponde directamente a δ = Micro-F1(A) − Micro-F1(B). Se concluye
+    que existe diferencia cuando el IC 95% excluye el cero.
+    """
+    por_modelo = {
+        r["meta"]["id"]: {h["id_clinical_text"]: h for h in r["historias"]}
+        for r in resultados
+    }
+    nombres = {r["meta"]["id"]: r["meta"]["nombre"] for r in resultados}
+
+    clusters: Dict[str, List[str]] = defaultdict(list)
+    for h in resultados[0]["historias"]:
+        clusters[h["id_code_combination"]].append(h["id_clinical_text"])
+    ids_cluster = sorted(clusters)
+
+    rng = random.Random(semilla)
+    muestras_ids: List[List[str]] = []
+    for _ in range(n_iter):
+        elegidos = [rng.choice(ids_cluster) for _ in range(len(ids_cluster))]
+        muestras_ids.append([tid for c in elegidos for tid in clusters[c]])
+
+    f1_por_iter: Dict[str, List[float]] = {}
+    for mid, mapa in por_modelo.items():
+        f1_por_iter[mid] = [
+            micro_f1_rapido([mapa[tid] for tid in ids])
+            for ids in muestras_ids
+        ]
+
+    idx_low = int(0.025 * n_iter)
+    idx_high = int(0.975 * n_iter)
+
+    comparaciones = []
+    for a, b in PARES_COMPARACION:
+        if a not in por_modelo or b not in por_modelo:
+            continue
+        punto = micro_f1_rapido(list(por_modelo[a].values())) - micro_f1_rapido(list(por_modelo[b].values()))
+        diffs = sorted(x - y for x, y in zip(f1_por_iter[a], f1_por_iter[b]))
+        ic_low, ic_high = diffs[idx_low], diffs[idx_high]
+        comparaciones.append({
+            "modelo_a": nombres[a],
+            "modelo_b": nombres[b],
+            "diferencia_micro_f1": punto,
+            "ic_95": (ic_low, ic_high),
+            "excluye_cero": ic_low > 0 or ic_high < 0
+        })
+    return comparaciones
 
 
 def construir_filas_tabla_transpuesta(resultados: List[Dict[str, Any]]) -> List[Tuple[str, str, str, str, bool]]:
@@ -505,10 +610,11 @@ def main():
             historias = json.load(f)
 
         metricas = calcular_desempeno(historias, codigos_cif)
-        ci_95 = calcular_bootstrap_ci(historias, codigos_cif, n_iter=1000, semilla=2026)
+        ci_95 = calcular_bootstrap_ci(historias, codigos_cif, n_iter=2000, semilla=2026)
 
         resultados.append({
             "meta": m,
+            "historias": historias,
             "metricas": metricas,
             "ci_95": ci_95
         })
@@ -526,6 +632,19 @@ def main():
 
     print("=" * 115)
 
+    comparaciones = calcular_diferencias_pareadas(resultados, n_iter=2000, semilla=2026)
+
+    print("\n▶ COMPARACIÓN PAREADA ENTRE MODELOS (bootstrap pareado por conglomerados; B = 2000)")
+    print("-" * 115)
+    print(f" {'Comparación (A − B)':<46} | {'Δ Micro-F1':<12} | {'IC 95%':<22} | Conclusión")
+    print("-" * 115)
+    for c in comparaciones:
+        etiqueta = f"{c['modelo_a']} − {c['modelo_b']}"
+        ic = f"[{c['ic_95'][0]:+.4f}, {c['ic_95'][1]:+.4f}]"
+        conclusion = "Excluye el cero" if c["excluye_cero"] else "Incluye el cero"
+        print(f" {etiqueta:<45} | {c['diferencia_micro_f1']:+.4f}      | {ic:<22} | {conclusion}")
+    print("=" * 115)
+
     ruta_docx = TABLAS_DIR / "tablas_desempeno.docx"
     exportar_documento_docx(resultados, ruta_docx)
 
@@ -541,6 +660,17 @@ def main():
     with open(ruta_json, "w", encoding="utf-8") as f:
         json.dump(salida_json, f, indent=2, ensure_ascii=False)
     print(f"💾 Resumen estadístico JSON guardado en: {ruta_json}")
+
+    ruta_comparaciones = LLM_DIR / "resumen_comparaciones_pareadas.json"
+    with open(ruta_comparaciones, "w", encoding="utf-8") as f:
+        json.dump({
+            "metodo": "Bootstrap pareado percentil por conglomerados (remuestreo de combinaciones de códigos)",
+            "n_iteraciones": 2000,
+            "semilla": 2026,
+            "metrica": "Micro-F1",
+            "comparaciones": comparaciones
+        }, f, indent=2, ensure_ascii=False)
+    print(f"💾 Comparaciones pareadas guardadas en: {ruta_comparaciones}")
 
 
 if __name__ == "__main__":

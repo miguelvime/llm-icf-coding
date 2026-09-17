@@ -1,6 +1,6 @@
 # 📊 Informe de Evaluación Diagnóstica CIF
 **Dataset:** Test Suite Run (test_codifier_output.json)  
-**Fecha:** 2026-09-14 11:12  
+**Fecha:** 2026-09-17 10:55  
 **Muestra:** N = 12 historias clínicas
 
 ---

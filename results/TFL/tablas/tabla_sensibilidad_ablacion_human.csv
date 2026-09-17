@@ -2,21 +2,21 @@
 Parámetros del Espacio,Número de Categorías CIF evaluadas,24 códigos,24 códigos,24 códigos
 Parámetros del Espacio,Soporte Real Ground Truth (menciones),115,115,115
 Parámetros del Espacio,Prevalencia de b280 en el Corpus,100.0% (21/21),100.0% (21/21),100.0% (21/21)
-Espacio Completo (Con b280),Micro-F1,0.7727,0.6792,0.7115
-Espacio Completo (Con b280),Macro-F1,0.5548,0.4581,0.4683
-Espacio Completo (Con b280),Weighted-F1,0.7617,0.6697,0.6799
-Espacio Completo (Con b280),Exact Match Ratio (EMR %),19.05% (4/21),4.76% (1/21),9.52% (2/21)
-Espacio Completo (Con b280),Matriz de Confusión (TP / FP / FN),85 / 20 / 30,72 / 25 / 43,74 / 19 / 41
-Ablación (Sin dolor b280),Micro-F1,0.7191,0.6000,0.6386
-Ablación (Sin dolor b280),Macro-F1,0.5355,0.4345,0.4451
-Ablación (Sin dolor b280),Weighted-F1,0.7084,0.5959,0.6084
-Ablación (Sin dolor b280),Exact Match Ratio (EMR %),19.05% (4/21),4.76% (1/21),9.52% (2/21)
-Ablación (Sin dolor b280),Matriz de Confusión (TP / FP / FN),64 / 20 / 30,51 / 25 / 43,53 / 19 / 41
-Variación Absoluta (Δ = Sin - Con),Δ Micro-F1,-0.0536,-0.0792,-0.0730
-Variación Absoluta (Δ = Sin - Con),Δ Macro-F1,-0.0194,-0.0236,-0.0231
-Variación Absoluta (Δ = Sin - Con),Δ Weighted-F1,-0.0532,-0.0738,-0.0715
+Espacio Completo (Con b280),Micro-F1,0.7487,0.6417,0.6739
+Espacio Completo (Con b280),Macro-F1,0.5937,0.4647,0.4743
+Espacio Completo (Con b280),Weighted-F1,0.7338,0.6289,0.6375
+Espacio Completo (Con b280),Exact Match Ratio (EMR %),15.79% (4/21),0.00% (1/21),0.00% (2/21)
+Espacio Completo (Con b280),Matriz de Confusión (TP / FP / FN),73 / 19 / 30,60 / 24 / 43,62 / 19 / 41
+Ablación (Sin dolor b280),Micro-F1,0.6879,0.5503,0.5890
+Ablación (Sin dolor b280),Macro-F1,0.5734,0.4380,0.4481
+Ablación (Sin dolor b280),Weighted-F1,0.6736,0.5450,0.5555
+Ablación (Sin dolor b280),Exact Match Ratio (EMR %),15.79% (4/21),0.00% (1/21),0.00% (2/21)
+Ablación (Sin dolor b280),Matriz de Confusión (TP / FP / FN),54 / 19 / 30,41 / 24 / 43,43 / 19 / 41
+Variación Absoluta (Δ = Sin - Con),Δ Micro-F1,-0.0608,-0.0914,-0.0849
+Variación Absoluta (Δ = Sin - Con),Δ Macro-F1,-0.0203,-0.0268,-0.0263
+Variación Absoluta (Δ = Sin - Con),Δ Weighted-F1,-0.0602,-0.0839,-0.0820
 Variación Absoluta (Δ = Sin - Con),Δ EMR (%),+0.00%,+0.00%,+0.00%
-Tasa de Retención (%),Retención Micro-F1,93.06%,88.33%,89.74%
-Tasa de Retención (%),Retención Macro-F1,96.51%,94.86%,95.06%
-Tasa de Retención (%),Retención Weighted-F1,93.01%,88.98%,89.48%
+Tasa de Retención (%),Retención Micro-F1,91.88%,85.76%,87.41%
+Tasa de Retención (%),Retención Macro-F1,96.58%,94.24%,94.46%
+Tasa de Retención (%),Retención Weighted-F1,91.79%,86.65%,87.14%
 Tasa de Retención (%),Retención EMR,100.00%,100.00%,100.00%
