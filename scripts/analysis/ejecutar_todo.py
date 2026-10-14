@@ -37,7 +37,6 @@ PYTHON_SCRIPTS = [
     ("08_plot_sensibilidad_ablacion.py", "Figura de sensibilidad por ablación de b280"),
     ("13_analisis_human_annotated.py", "Métricas diagnósticas en corpus humano (N=21)"),
     ("14_plot_human_annotated.py", "Figuras de validación humana (300 DPI)"),
-    ("16_generar_informe_word_completo.py", "Informe clínico integrado en Word"),
     ("17_workflow_diagram.py", "Diagramas metodológicos del flujo (PNG/SVG/PDF)"),
     ("18_generar_dashboard_html.py", "Dashboard interactivo HTML e informe ejecutivo"),
     ("21_analisis_ablacion_consenso_human.py", "Análisis de ablación y consenso en cohorte humana"),
