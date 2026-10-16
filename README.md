@@ -83,24 +83,16 @@ Para generar el HTML hace falta pandoc, que viene con RStudio y con la imagen de
    - `2026-09-03_generic_LLM_codifier.json`, un flujo genérico que puedes adaptar a cualquier modelo.
 3. Pulsa **Execute Workflow** y carga el JSON que quieres codificar.
 
-## Verificación en Python (opcional)
-
-`scripts_test/` repite los análisis 01 a 05 en Python con scikit-learn y la versión de irrCAC para Python. Sirve para comprobar que dos implementaciones independientes dan las mismas estimaciones. Los IC bootstrap cambian ligeramente porque el generador de números aleatorios es distinto.
-
-```bash
-pip install numpy pandas scikit-learn irrCAC
-python scripts_test/02_f1_score.py
-```
-
 ## Estructura
 
 ```
 analisis/          Scripts de R: análisis, figuras, tablas e informe
 data/              Historias sintéticas (generator_output.json, N = 114) y de fisioterapeutas (physio_created_annotated.json, N = 21)
 n8n_workflows/     Flujos de n8n para generar y codificar historias
+prompts/           Prompts del generador y del codificador, e instrucciones y material de referencia para los fisioterapeutas
+scripts/           Código JavaScript de los nodos de n8n
 infrastructure/    Docker Compose y Dockerfile del análisis
 results/           Salidas de n8n por modelo (llm_text/, human_text/) y resultados del análisis
-scripts_test/      Verificación en Python (opcional)
 ```
 
 ## Licencia
