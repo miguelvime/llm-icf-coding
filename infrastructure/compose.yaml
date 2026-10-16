@@ -1,7 +1,4 @@
 services:
-  # ==============================================================================
-  # Orquestador de Flujos de Codificación Clínica (n8n)
-  # ==============================================================================
   n8n:
     image: n8nio/n8n@sha256:a49bc161141d6c4b9c495b5a6e3c7c1932e61d2ed2fe3fdca01262064b4b23ca
     container_name: n8n-main
@@ -20,20 +17,13 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  # ==============================================================================
-  # Contenedor de Análisis Estadístico y Generación de TFL (Python 3.12 + R 4.4)
-  # ==============================================================================
   analysis:
     build:
-      context: ..
-      dockerfile: infrastructure/Dockerfile.analysis
-    container_name: tfm-analysis
+      context: .
+      dockerfile: Dockerfile.analysis
+    user: "1000:1000"
     volumes:
-      - ../data:/workspace/data
-      - ../scripts:/workspace/scripts
-      - ../results:/workspace/results
-    working_dir: /workspace
-    command: python3 scripts/analysis/ejecutar_todo.py
+      - ..:/workspace
 
 volumes:
   n8n_data:

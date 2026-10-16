@@ -1,0 +1,405 @@
+
+===== 01_fiabilidad.R =====
+
+Gemini Flash 3.5
+Acuerdo exacto: 102 de 114 historias
+               Po    AC1   Alfa
+estimacion 0.9966 0.9952 0.9882
+2.5%       0.9942 0.9918 0.9806
+97.5%      0.9985 0.9980 0.9948
+
+Gemini Flash 3.7
+Acuerdo exacto: 108 de 114 historias
+               Po    AC1   Alfa
+estimacion 0.9985 0.9980 0.9948
+2.5%       0.9971 0.9958 0.9897
+97.5%      0.9998 0.9997 0.9991
+
+Gemma-4-31B-it
+Acuerdo exacto: 107 de 114 historias
+               Po    AC1   Alfa
+estimacion 0.9983 0.9976 0.9940
+2.5%       0.9971 0.9959 0.9898
+97.5%      0.9993 0.9990 0.9977
+
+===== 02_f1_score.R =====
+
+Gemini Flash 3.5
+TP = 460  FP = 12  FN = 5  EMR = 100 de 114 
+   precision_micro       recall_micro              micro    precision_macro 
+            0.9746             0.9892             0.9819             0.9694 
+      recall_macro              macro precision_weighted    recall_weighted 
+            0.9869             0.9768             0.9765             0.9892 
+          weighted                emr 
+            0.9819             0.8772 
+ codigo soporte  tp fp fn     f1
+   b130      12  12  0  0 1.0000
+   b134      15  15  0  0 1.0000
+   b147       9   9  0  0 1.0000
+   b152      15  15  3  0 0.9091
+  b1602      21  21  0  0 1.0000
+   b280     105 105  0  0 1.0000
+   b455      12  12  0  0 1.0000
+   b730      15  15  0  0 1.0000
+   b760       9   9  1  0 0.9474
+   d175      12  12  0  0 1.0000
+   d230      15  15  2  0 0.9375
+   d240      21  21  0  0 1.0000
+   d430      15  15  0  0 1.0000
+   d450      18  18  0  0 1.0000
+   d640      15  15  0  0 1.0000
+   d760      21  20  1  1 0.9524
+   d770      12  12  1  0 0.9600
+   d850      12  12  0  0 1.0000
+   d920      27  27  0  0 1.0000
+  e1101      21  21  0  0 1.0000
+   e310      15  11  1  4 0.8148
+   e355      18  18  3  0 0.9231
+   e410      18  18  0  0 1.0000
+   e570      12  12  0  0 1.0000
+
+Gemini Flash 3.7
+TP = 458  FP = 7  FN = 7  EMR = 102 de 114 
+   precision_micro       recall_micro              micro    precision_macro 
+            0.9849             0.9849             0.9849             0.9818 
+      recall_macro              macro precision_weighted    recall_weighted 
+            0.9813             0.9789             0.9868             0.9849 
+          weighted                emr 
+            0.9838             0.8947 
+ codigo soporte  tp fp fn     f1
+   b130      12  12  0  0 1.0000
+   b134      15  15  0  0 1.0000
+   b147       9   9  0  0 1.0000
+   b152      15  15  2  0 0.9375
+  b1602      21  21  0  0 1.0000
+   b280     105 105  0  0 1.0000
+   b455      12  12  0  0 1.0000
+   b730      15  15  0  0 1.0000
+   b760       9   9  1  0 0.9474
+   d175      12  12  0  0 1.0000
+   d230      15  15  0  0 1.0000
+   d240      21  21  0  0 1.0000
+   d430      15  15  0  0 1.0000
+   d450      18  18  0  0 1.0000
+   d640      15  15  0  0 1.0000
+   d760      21  20  0  1 0.9756
+   d770      12  12  1  0 0.9600
+   d850      12  12  0  0 1.0000
+   d920      27  27  0  0 1.0000
+  e1101      21  21  0  0 1.0000
+   e310      15   9  0  6 0.7500
+   e355      18  18  3  0 0.9231
+   e410      18  18  0  0 1.0000
+   e570      12  12  0  0 1.0000
+
+Gemma-4-31B-it
+TP = 458  FP = 12  FN = 7  EMR = 99 de 114 
+   precision_micro       recall_micro              micro    precision_macro 
+            0.9745             0.9849             0.9797             0.9689 
+      recall_macro              macro precision_weighted    recall_weighted 
+            0.9821             0.9731             0.9775             0.9849 
+          weighted                emr 
+            0.9794             0.8684 
+ codigo soporte  tp fp fn     f1
+   b130      12  12  0  0 1.0000
+   b134      15  15  0  0 1.0000
+   b147       9   9  0  0 1.0000
+   b152      15  15  1  0 0.9677
+  b1602      21  21  0  0 1.0000
+   b280     105 105  0  0 1.0000
+   b455      12  12  0  0 1.0000
+   b730      15  15  0  0 1.0000
+   b760       9   9  2  0 0.9000
+   d175      12  12  0  0 1.0000
+   d230      15  15  2  0 0.9375
+   d240      21  20  0  1 0.9756
+   d430      15  15  0  0 1.0000
+   d450      18  18  0  0 1.0000
+   d640      15  15  0  0 1.0000
+   d760      21  20  1  1 0.9524
+   d770      12  12  1  0 0.9600
+   d850      12  12  1  0 0.9600
+   d920      27  27  0  0 1.0000
+  e1101      21  21  0  0 1.0000
+   e310      15  10  0  5 0.8000
+   e355      18  18  4  0 0.9000
+   e410      18  18  0  0 1.0000
+   e570      12  12  0  0 1.0000
+
+IC 95% bootstrap
+
+Gemini Flash 3.5
+      micro macro weighted
+2.5%  0.972 0.956    0.973
+97.5% 0.991 0.989    0.991
+
+Gemini Flash 3.7
+      micro macro weighted
+2.5%  0.974 0.954    0.969
+97.5% 0.994 0.993    0.994
+
+Gemma-4-31B-it
+      micro macro weighted
+2.5%  0.968 0.949    0.967
+97.5% 0.991 0.988    0.991
+
+Diferencia de micro-F1
+Gemma-4-31B-it - Gemini Flash 3.7 = -0.0053  IC 95%: -0.0122 0.0012  (incluye el 0) 
+Gemma-4-31B-it - Gemini Flash 3.5 = -0.0022  IC 95%: -0.0085 0.0043  (incluye el 0) 
+Gemini Flash 3.7 - Gemini Flash 3.5 = 0.0031  IC 95%: -0.0022 0.0089  (incluye el 0) 
+
+===== 03_ablacion_b280.R =====
+Gemini Flash 3.5 
+         con_b280 sin_b280 diferencia retencion_pct
+micro      0.9819   0.9766    -0.0052       99.4662
+macro      0.9768   0.9758    -0.0010       99.8969
+weighted   0.9819   0.9766    -0.0053       99.4623
+emr        0.8772   0.8772     0.0000      100.0000
+Gemini Flash 3.7 
+         con_b280 sin_b280 diferencia retencion_pct
+micro      0.9849   0.9806    -0.0044       99.5542
+macro      0.9789   0.9780    -0.0009       99.9063
+weighted   0.9838   0.9791    -0.0047       99.5194
+emr        0.8947   0.8947     0.0000      100.0000
+Gemma-4-31B-it 
+         con_b280 sin_b280 diferencia retencion_pct
+micro      0.9797   0.9738    -0.0059       99.3992
+macro      0.9731   0.9719    -0.0012       99.8796
+weighted   0.9794   0.9734    -0.0060       99.3856
+emr        0.8684   0.8684     0.0000      100.0000
+
+===== 04_humanos.R =====
+Historias analizadas: 19 
+
+Gemini Flash 3.5
+Acuerdo exacto: 10 de 19 historias
+    Po    AC1   Alfa 
+0.9839 0.9764 0.9494 
+                   con_b280 sin_b280
+precision_micro      0.7143   0.6308
+recall_micro         0.5825   0.4881
+micro                0.6417   0.5503
+precision_macro      0.5897   0.5692
+recall_macro         0.4159   0.3867
+macro                0.4647   0.4380
+precision_weighted   0.7434   0.6853
+recall_weighted      0.5825   0.4881
+weighted             0.6289   0.5450
+emr                  0.0000   0.0000
+
+Gemini Flash 3.7
+Acuerdo exacto: 10 de 19 historias
+    Po    AC1   Alfa 
+0.9781 0.9680 0.9304 
+                   con_b280 sin_b280
+precision_micro      0.7654   0.6935
+recall_micro         0.6019   0.5119
+micro                0.6739   0.5890
+precision_macro      0.6058   0.5861
+recall_macro         0.4329   0.4046
+macro                0.4743   0.4481
+precision_weighted   0.7521   0.6961
+recall_weighted      0.6019   0.5119
+weighted             0.6375   0.5555
+emr                  0.0000   0.0000
+
+Gemma-4-31B-it
+Acuerdo exacto: 12 de 19 historias
+    Po    AC1   Alfa 
+0.9883 0.9824 0.9650 
+                   con_b280 sin_b280
+precision_micro      0.7935   0.7397
+recall_micro         0.7087   0.6429
+micro                0.7487   0.6879
+precision_macro      0.6963   0.6811
+recall_macro         0.5821   0.5612
+macro                0.5937   0.5734
+precision_weighted   0.8208   0.7802
+recall_weighted      0.7087   0.6429
+weighted             0.7338   0.6736
+emr                  0.1579   0.1579
+
+IC 95% bootstrap
+
+Gemini Flash 3.5
+      micro macro weighted
+2.5%  0.550 0.404    0.501
+97.5% 0.728 0.622    0.734
+
+Gemini Flash 3.7
+      micro macro weighted
+2.5%  0.578 0.409    0.507
+97.5% 0.758 0.617    0.751
+
+Gemma-4-31B-it
+      micro macro weighted
+2.5%  0.663 0.531    0.648
+97.5% 0.834 0.726    0.826
+
+Diferencia de micro-F1
+Gemma-4-31B-it - Gemini Flash 3.7 = 0.0748  IC 95%: 0.0209 0.1357  (excluye el 0) 
+Gemma-4-31B-it - Gemini Flash 3.5 = 0.107  IC 95%: 0.041 0.1875  (excluye el 0) 
+Gemini Flash 3.7 - Gemini Flash 3.5 = 0.0322  IC 95%: 0 0.0624  (incluye el 0) 
+
+===== 05_estrategias_consenso.R =====
+===== sinteticas =====
+Gemini Flash 3.5 
+             precision_micro recall_micro  micro    emr
+Iteración 1           0.9665       0.9935 0.9799 0.8684
+Iteración 2           0.9644       0.9914 0.9777 0.8596
+Iteración 3           0.9606       0.9957 0.9778 0.8509
+Consenso 3/3          0.9746       0.9892 0.9819 0.8772
+Mayoría 2/3           0.9646       0.9957 0.9799 0.8684
+Unión 1/3             0.9527       0.9957 0.9737 0.8333
+Gemini Flash 3.7 
+             precision_micro recall_micro  micro    emr
+Iteración 1           0.9828       0.9849 0.9839 0.8947
+Iteración 2           0.9787       0.9892 0.9840 0.9123
+Iteración 3           0.9829       0.9892 0.9861 0.9035
+Consenso 3/3          0.9849       0.9849 0.9849 0.8947
+Mayoría 2/3           0.9808       0.9871 0.9839 0.9035
+Unión 1/3             0.9788       0.9914 0.9850 0.9123
+Gemma-4-31B-it 
+             precision_micro recall_micro  micro    emr
+Iteración 1           0.9703       0.9849 0.9776 0.8596
+Iteración 2           0.9704       0.9871 0.9787 0.8596
+Iteración 3           0.9684       0.9871 0.9776 0.8596
+Consenso 3/3          0.9745       0.9849 0.9797 0.8684
+Mayoría 2/3           0.9703       0.9849 0.9776 0.8596
+Unión 1/3             0.9644       0.9892 0.9766 0.8509
+===== reales =====
+Gemini Flash 3.5 
+             precision_micro recall_micro  micro emr
+Iteración 1           0.7033       0.6214 0.6598   0
+Iteración 2           0.6923       0.6117 0.6495   0
+Iteración 3           0.7191       0.6214 0.6667   0
+Consenso 3/3          0.7143       0.5825 0.6417   0
+Mayoría 2/3           0.7065       0.6311 0.6667   0
+Unión 1/3             0.6947       0.6408 0.6667   0
+Gemini Flash 3.7 
+             precision_micro recall_micro  micro emr
+Iteración 1           0.7253       0.6408 0.6804   0
+Iteración 2           0.7528       0.6505 0.6979   0
+Iteración 3           0.7045       0.6019 0.6492   0
+Consenso 3/3          0.7654       0.6019 0.6739   0
+Mayoría 2/3           0.7253       0.6408 0.6804   0
+Unión 1/3             0.6979       0.6505 0.6734   0
+Gemma-4-31B-it 
+             precision_micro recall_micro  micro    emr
+Iteración 1           0.7684       0.7087 0.7374 0.1579
+Iteración 2           0.7857       0.7476 0.7662 0.1053
+Iteración 3           0.7835       0.7379 0.7600 0.1053
+Consenso 3/3          0.7935       0.7087 0.7487 0.1579
+Mayoría 2/3           0.7755       0.7379 0.7562 0.1053
+Unión 1/3             0.7700       0.7476 0.7586 0.1053
+
+===== 06_figuras.R =====
+
+===== 07_tablas.R =====
+
+Tabla 1. Características del corpus sintético
+                                     Valor
+Textos clínicos                        114
+Códigos CIF extraídos                  465
+Códigos CIF únicos                      24
+Códigos por texto (media ± DE) 4.08 ± 1.48
+Códigos por texto (mediana)              4
+
+Tabla 2. Fiabilidad entre iteraciones (corpus sintético)
+                 Historias Acuerdo 3/3 PAE (%) Po (%) AC1 [IC 95%]        
+Gemini Flash 3.5 114       102/114     89.47   99.66  0.995 [0.992, 0.998]
+Gemini Flash 3.7 114       108/114     94.74   99.85  0.998 [0.996, 1.000]
+Gemma-4-31B-it   114       107/114     93.86   99.83  0.998 [0.996, 0.999]
+                 Alfa [IC 95%]       
+Gemini Flash 3.5 0.988 [0.981, 0.995]
+Gemini Flash 3.7 0.995 [0.990, 0.999]
+Gemma-4-31B-it   0.994 [0.990, 0.998]
+
+Tabla 3. Desempeño de la codificación (corpus sintético)
+                      Gemini Flash 3.5     Gemini Flash 3.7    
+TP                    460                  458                 
+FP                    12                   7                   
+FN                    5                    7                   
+EMR                   100/114              102/114             
+EMR (%)               87.72                89.47               
+Precisión micro       0.975                0.985               
+Sensibilidad micro    0.989                0.985               
+Micro-F1 [IC 95%]     0.982 [0.972, 0.991] 0.985 [0.974, 0.994]
+Precisión macro       0.969                0.982               
+Sensibilidad macro    0.987                0.981               
+Macro-F1 [IC 95%]     0.977 [0.956, 0.989] 0.979 [0.954, 0.993]
+Precisión weighted    0.977                0.987               
+Sensibilidad weighted 0.989                0.985               
+Weighted-F1 [IC 95%]  0.982 [0.973, 0.991] 0.984 [0.969, 0.994]
+                      Gemma-4-31B-it      
+TP                    458                 
+FP                    12                  
+FN                    7                   
+EMR                   99/114              
+EMR (%)               86.84               
+Precisión micro       0.974               
+Sensibilidad micro    0.985               
+Micro-F1 [IC 95%]     0.980 [0.968, 0.991]
+Precisión macro       0.969               
+Sensibilidad macro    0.982               
+Macro-F1 [IC 95%]     0.973 [0.949, 0.988]
+Precisión weighted    0.978               
+Sensibilidad weighted 0.985               
+Weighted-F1 [IC 95%]  0.979 [0.967, 0.991]
+
+Tabla 4. Micro-F1 (EMR) según la estrategia de consenso (corpus sintético)
+             Gemini Flash 3.5 Gemini Flash 3.7 Gemma-4-31B-it 
+Iteración 1  0.9799 (86.84%)  0.9839 (89.47%)  0.9776 (85.96%)
+Iteración 2  0.9777 (85.96%)  0.984 (91.23%)   0.9787 (85.96%)
+Iteración 3  0.9778 (85.09%)  0.9861 (90.35%)  0.9776 (85.96%)
+Consenso 3/3 0.9819 (87.72%)  0.9849 (89.47%)  0.9797 (86.84%)
+Mayoría 2/3  0.9799 (86.84%)  0.9839 (90.35%)  0.9776 (85.96%)
+Unión 1/3    0.9737 (83.33%)  0.985 (91.23%)   0.9766 (85.09%)
+
+Tabla 5. Fiabilidad y desempeño en historias de fisioterapeutas
+                                  Gemini Flash 3.5     Gemini Flash 3.7    
+Menciones CIF de referencia       103                  103                 
+Códigos por historia (media ± DE) 5.42 ± 2.69          5.42 ± 2.69         
+Historias                         19                   19                  
+Acuerdo 3/3                       10/19                10/19               
+PAE (%)                           52.63                52.63               
+Po (%)                            98.39                97.81               
+AC1 [IC 95%]                      0.976 [0.967, 0.986] 0.968 [0.945, 0.985]
+Alfa [IC 95%]                     0.949 [0.931, 0.970] 0.930 [0.894, 0.962]
+TP                                60                   62                  
+FP                                24                   19                  
+FN                                43                   41                  
+EMR                               0/19                 0/19                
+EMR (%)                           0                    0                   
+Precisión micro                   0.714                0.765               
+Sensibilidad micro                0.583                0.602               
+Micro-F1 [IC 95%]                 0.642 [0.550, 0.728] 0.674 [0.578, 0.758]
+Precisión macro                   0.59                 0.606               
+Sensibilidad macro                0.416                0.433               
+Macro-F1 [IC 95%]                 0.465 [0.404, 0.622] 0.474 [0.409, 0.617]
+Precisión weighted                0.743                0.752               
+Sensibilidad weighted             0.583                0.602               
+Weighted-F1 [IC 95%]              0.629 [0.501, 0.734] 0.638 [0.507, 0.751]
+                                  Gemma-4-31B-it      
+Menciones CIF de referencia       103                 
+Códigos por historia (media ± DE) 5.42 ± 2.69         
+Historias                         19                  
+Acuerdo 3/3                       12/19               
+PAE (%)                           63.16               
+Po (%)                            98.83               
+AC1 [IC 95%]                      0.982 [0.972, 0.990]
+Alfa [IC 95%]                     0.965 [0.948, 0.980]
+TP                                73                  
+FP                                19                  
+FN                                30                  
+EMR                               3/19                
+EMR (%)                           15.79               
+Precisión micro                   0.793               
+Sensibilidad micro                0.709               
+Micro-F1 [IC 95%]                 0.749 [0.663, 0.834]
+Precisión macro                   0.696               
+Sensibilidad macro                0.582               
+Macro-F1 [IC 95%]                 0.594 [0.531, 0.726]
+Precisión weighted                0.821               
+Sensibilidad weighted             0.709               
+Weighted-F1 [IC 95%]              0.734 [0.648, 0.826]

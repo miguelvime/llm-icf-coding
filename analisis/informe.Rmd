@@ -1,0 +1,81 @@
+---
+title: "`r params$nombre`"
+output: html_document
+params:
+  archivo: ""
+  nombre: ""
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+source("analisis/00_comun.R")
+library(ggplot2)
+
+d <- fromJSON(params$archivo)
+predichos <- d$predicted_icf_codes_consensus
+tiene_referencia <- !is.null(d$icf_codes)
+tiene_iteraciones <- !is.null(d$predicted_icf_it1)
+```
+
+## Resumen
+
+```{r}
+n <- lengths(predichos)
+resumen <- c("Historias" = nrow(d),
+             "Códigos asignados" = sum(n),
+             "Códigos por historia (media ± DE)" = paste(round(mean(n), 2), "±", round(sd(n), 2)))
+
+if (tiene_iteraciones) {
+  f <- fiabilidad(d)
+  resumen <- c(resumen,
+               "Historias con las 3 iteraciones iguales" = acuerdo_exacto(d),
+               "Acuerdo observado (Po)" = round(f[["Po"]], 3),
+               "AC1 de Gwet" = round(f[["AC1"]], 3),
+               "Alfa de Krippendorff" = round(f[["Alfa"]], 3))
+}
+
+knitr::kable(data.frame(Valor = resumen))
+```
+
+## Frecuencia de cada código
+
+```{r, fig.width = 9, fig.height = 4}
+frecuencia <- as.data.frame(table(codigo = unlist(predichos)))
+
+ggplot(frecuencia, aes(reorder(codigo, -Freq), Freq / nrow(d) * 100)) +
+  geom_col(fill = "#3B82F6") +
+  labs(x = "Código CIF", y = "Historias con el código (%)") +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+```
+
+## Evaluación frente a la referencia
+
+`r if (!tiene_referencia) "El archivo no incluye una codificación de referencia (icf_codes)."`
+
+```{r, eval = tiene_referencia}
+m <- metricas(d$icf_codes, predichos)
+tabla <- data.frame(Precisión = m[c("precision_micro", "precision_macro", "precision_weighted")],
+                    Sensibilidad = m[c("recall_micro", "recall_macro", "recall_weighted")],
+                    F1 = m[c("micro", "macro", "weighted")],
+                    row.names = c("Micro", "Macro", "Weighted"))
+knitr::kable(tabla, digits = 3, caption = paste0("Exact match ratio: ", round(m[["emr"]] * 100, 1), "%"))
+```
+
+```{r, eval = tiene_referencia}
+knitr::kable(f1_codigo(d$icf_codes, predichos), digits = 3, row.names = FALSE, caption = "F1 por código")
+```
+
+```{r, eval = tiene_referencia}
+errores <- data.frame()
+for (i in 1:nrow(d)) {
+  falsos_positivos <- setdiff(predichos[[i]], d$icf_codes[[i]])
+  falsos_negativos <- setdiff(d$icf_codes[[i]], predichos[[i]])
+  if (length(falsos_positivos) + length(falsos_negativos) > 0) {
+    errores <- rbind(errores, data.frame(historia = d$id_clinical_text[i],
+                                         falsos_positivos = paste(falsos_positivos, collapse = ", "),
+                                         falsos_negativos = paste(falsos_negativos, collapse = ", ")))
+  }
+}
+knitr::kable(errores, caption = "Historias con discrepancias")
+```

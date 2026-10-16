@@ -1,43 +1,7 @@
-# ==============================================================================
-# Dockerfile para la Suite de Análisis Estadístico y Generación de TFL (TFM)
-# Combina Python 3.12 y R 4.4 con soporte para exportación editorial APA a Word
-# ==============================================================================
-FROM python:3.12-slim-bookworm
+FROM rocker/tidyverse:4.5.1
 
-# Evitar prompts interactivos durante la instalación
-ENV DEBIAN_FRONTEND=noninteractive
-ENV PYTHONUNBUFFERED=1
+RUN install2.r --error irrCAC patchwork
 
-# 1. Instalar dependencias del sistema y entorno R
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    r-base \
-    r-base-dev \
-    libxml2-dev \
-    libcairo2-dev \
-    libfontconfig1-dev \
-    libfreetype6-dev \
-    libpng-dev \
-    libtiff5-dev \
-    libjpeg-dev \
-    libssl-dev \
-    libharfbuzz-dev \
-    libfribidi-dev \
-    libuv1-dev \
-    pandoc \
-    gcc \
-    g++ \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# 2. Establecer directorio de trabajo
 WORKDIR /workspace
 
-# 3. Copiar e instalar dependencias de Python
-COPY requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
-
-# 4. Instalar paquetes de R para renderizado de tablas APA en Word
-RUN Rscript -e "pkgs <- c('flextable', 'officer', 'dplyr', 'jsonlite', 'readr', 'magrittr', 'tibble'); install.packages(pkgs, repos='https://cloud.r-project.org'); missing <- pkgs[!pkgs %in% installed.packages()[, 'Package']]; if (length(missing) > 0) stop('Missing packages: ', paste(missing, collapse=', '))"
-
-# 5. Comando de ejecución por defecto (ejecuta toda la suite estadística)
-CMD ["python3", "scripts/analysis/ejecutar_todo.py"]
+CMD ["Rscript", "analisis/ejecutar_todo.R"]

@@ -1,6 +1,4 @@
-# ==============================================================================
-# Python / Entornos virtuales y paquetes
-# ==============================================================================
+
 __pycache__/
 *.py[cod]
 *.class
@@ -10,10 +8,6 @@ __pycache__/
 venv/
 venv_win/
 .env
-
-# ==============================================================================
-# Infraestructura / Bases de datos locales y volúmenes Docker
-# ==============================================================================
 infrastructure/qdrant_data/
 infrastructure/ollama_data/
 infrastructure/n8n_data/
@@ -21,42 +15,28 @@ infrastructure/RAG_documents/
 qdrant_data/
 ollama_data/
 n8n_data/
-
-# ==============================================================================
-# Documentación privada y entregas del máster
-# ==============================================================================
 entregas/
 consulta/
 agent_output/
 .agents/
 AGENTS.md
 presentation/
-
-# ==============================================================================
-# IDEs y Editores de código
-# ==============================================================================
 .vscode/
 .idea/
 *.swp
 *.swo
 app/node_modules/
-
-# ==============================================================================
-# Archivos temporales de Office y Sistema Operativo
-# ==============================================================================
 ~\$*.docx
 ~\$*.xlsx
 ~\$*.pptx
 .DS_Store
 Thumbs.db
 bug_fix/
-
 scripts/archive_audit/
 *.summary.txt
-
-
-# Salidas vectoriales secundarias y tablas Word intermedias
 results/TFL/figuras/*.pdf
 results/TFL/figuras/*.svg
 results/TFL/tablas/*.docx
+results/informe_*.html
+*_BACKUP_*
 
