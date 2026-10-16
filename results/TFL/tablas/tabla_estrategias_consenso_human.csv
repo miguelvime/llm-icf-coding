@@ -1,7 +1,0 @@
-﻿Estrategia inferencia,Estrategia de Decisión,Coste Relativo,Gemma (F1),Gemma (EMR),Flash 3.5 (F1),Flash 3.5 (EMR),Flash 3.7 (F1),Flash 3.7 (EMR)
-Pase Único (1x),Iteración 1,1x (Óptimo),0.7374,15.79%,0.6598,0.00%,0.6804,0.00%
-Pase Único (1x),Iteración 2,1x,0.7662,10.53%,0.6495,0.00%,0.6979,0.00%
-Pase Único (1x),Iteración 3,1x,0.7600,10.53%,0.6667,0.00%,0.6492,0.00%
-Consenso Multi-Pase (3x),Consenso Estricto (3/3),3x,0.7487,15.79%,0.6417,0.00%,0.6739,0.00%
-Consenso Multi-Pase (3x),Voto Mayoritario (≥ 2/3),3x,0.7562,10.53%,0.6667,0.00%,0.6804,0.00%
-Consenso Multi-Pase (3x),Unión / Sensibilidad (≥ 1/3),3x,0.7586,10.53%,0.6667,0.00%,0.6734,0.00%

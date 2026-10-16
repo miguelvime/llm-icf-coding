@@ -1,4 +1,0 @@
-﻿Modelo LLM,Total Decisiones Binarias,"Asignación Unánime SÍ [1,1,1]","Abstención Unánime NO [0,0,0]",Discrepancia en Iteración,Determinismo Paciente
-Gemma-4-31B-it,2736,470 (17.18%),2259 (82.57%),7 (0.26%),107/114 (93.86%)
-Gemini Flash 3.5 (Cloud - Línea Base),2736,472 (17.25%),2250 (82.24%),14 (0.51%),102/114 (89.47%)
-Gemini Flash 3.7,2736,465 (17.00%),2265 (82.79%),6 (0.22%),108/114 (94.74%)

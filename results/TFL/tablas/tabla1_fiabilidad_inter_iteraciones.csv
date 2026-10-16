@@ -1,4 +1,0 @@
-﻿Modelo LLM,Despliegue,Historias Evaluadas,Acuerdo Exacto 3/3 (n),Exact Match (%),Acuerdo Observado Po (%),Gwet's AC1,Krippendorff α
-Gemma-4-31B-it,Local (On-Premise),114,107/114,93.86%,99.8294%,0.9976,0.9940
-Gemini Flash 3.5 (Cloud - Línea Base),Cloud (API),114,102/114,89.47%,99.6589%,0.9952,0.9882
-Gemini Flash 3.7,Cloud (API),114,108/114,94.74%,99.8538%,0.9980,0.9948
